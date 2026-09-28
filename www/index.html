@@ -1,1 +1,553 @@
 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>تذكير الأدوية</title>
+<script src="capacitor.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', Tahoma, system-ui, sans-serif;
+    background: #F5F9F8; color: #1A3C34;
+    direction: rtl; min-height: 100vh;
+  }
+  .screen { display: none; flex-direction: column; padding: 20px; min-height: 100vh; gap: 16px; }
+  .screen.active { display: flex; }
+  h1 { font-size: 2rem; margin: 0; text-align: right; }
+  h2 { font-size: 1.4rem; margin: 0; color: #5A7A72; font-weight: normal; text-align: right; }
+
+  button.big {
+    width: 100%; padding: 22px; font-size: 1.5rem; font-weight: bold;
+    border: none; border-radius: 20px; background: #2E7D6F; color: white;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,111,0.3);
+    font-family: inherit;
+  }
+  button.big:active { transform: scale(0.97); }
+  button.secondary { background: #E0EBE8; color: #1A3C34; box-shadow: none; }
+
+  input, select {
+    width: 100%; padding: 20px; font-size: 1.5rem;
+    border: 2px solid #D0E5E0; border-radius: 16px;
+    background: white; color: #1A3C34;
+    text-align: right; font-family: inherit;
+  }
+  input:focus, select:focus { outline: none; border-color: #2E7D6F; }
+  label { font-size: 1.2rem; color: #5A7A72; display: block; margin-bottom: 8px; text-align: right; }
+
+  .card {
+    background: white; border-radius: 24px; padding: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .card-header { display: flex; align-items: center; gap: 12px; }
+  .card-icon { font-size: 2rem; }
+  .card-name { font-size: 1.5rem; font-weight: bold; flex: 1; }
+  .card-info { font-size: 1.1rem; color: #5A7A72; }
+  .card-status {
+    font-size: 1rem; font-weight: bold; align-self: flex-start;
+    padding: 6px 14px; border-radius: 12px;
+  }
+  .status-upcoming { background: #FFF8E1; color: #B8860B; }
+  .status-taken    { background: #E8F5E9; color: #2E7D32; }
+
+  .card-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .card-actions button {
+    flex: 1; padding: 14px; font-size: 1.1rem;
+    border: none; border-radius: 14px; font-weight: bold;
+    font-family: inherit; cursor: pointer;
+  }
+  .btn-delete { background: #FFE5E5; color: #C62828; }
+  .btn-take   { background: #E8F5E9; color: #2E7D32; }
+
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+    background: #F5F9F8; display: flex; gap: 10px;
+  }
+  .bottom-bar .big { flex: 1; }
+  .has-bottom-bar { padding-bottom: 120px !important; }
+
+  .empty { text-align: center; padding: 60px 20px; color: #9AB8B0; font-size: 1.2rem; line-height: 1.8; }
+  .empty .icon { font-size: 4rem; display: block; margin-bottom: 16px; }
+
+  #alarmScreen { background: #2E7D6F; color: white; justify-content: center; text-align: center; }
+  #alarmScreen h1 { color: white; text-align: center; }
+  .alarm-icon { font-size: 6rem; text-align: center; }
+  .alarm-med  { font-size: 3rem; font-weight: bold; text-align: center; margin: 10px 0; }
+  .alarm-time { font-size: 1.8rem; text-align: center; color: #A8D5CA; }
+  .alarm-msg  { font-size: 1.8rem; text-align: center; margin: 20px 0; }
+
+  #statusBar {
+    background: #FFF3CD; color: #856404; padding: 10px;
+    border-radius: 12px; font-size: 0.95rem; text-align: center;
+  }
+  #statusBar.ok  { background: #D4EDDA; color: #155724; }
+  #statusBar.err { background: #F8D7DA; color: #721C24; }
+
+  .modal-bg {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); display: none;
+    align-items: center; justify-content: center;
+    z-index: 100; padding: 20px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: white; border-radius: 24px; padding: 24px;
+    max-width: 400px; width: 100%; text-align: center;
+  }
+  .modal h3 { font-size: 1.5rem; margin: 0 0 12px; color: #1A3C34; }
+  .modal p { font-size: 1.1rem; color: #5A7A72; margin: 0 0 20px; }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-actions button {
+    flex: 1; padding: 16px; font-size: 1.1rem;
+    border-radius: 14px; border: none; font-weight: bold; font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<div id="nameScreen" class="screen active" style="justify-content:center;">
+  <div style="text-align:center; font-size:5rem;">💊</div>
+  <h1 style="text-align:center; font-size:2.5rem;">ما اسمك؟</h1>
+  <p style="text-align:center; color:#5A7A72; font-size:1.2rem; margin:0;">سنستخدم اسمك لتذكيرك بأدويتك</p>
+  <input id="nameInput" placeholder="اكتب اسمك هنا" autocomplete="off">
+  <button class="big" onclick="saveName()">متابعة</button>
+</div>
+
+<div id="homeScreen" class="screen has-bottom-bar">
+  <div id="statusBar">جاري التحميل...</div>
+  <h1 id="greeting">مرحباً 👋</h1>
+  <h2>أدويتك اليوم</h2>
+  <div id="medList" style="display:flex; flex-direction:column; gap:14px;"></div>
+</div>
+
+<div id="homeBottom" class="bottom-bar" style="display:none;">
+  <button class="big" onclick="showScreen('addScreen')">+ إضافة دواء</button>
+  <button class="big secondary" style="flex:0 0 70px;" onclick="showScreen('settingsScreen')">⚙</button>
+</div>
+
+<div id="addScreen" class="screen">
+  <h1>إضافة دواء جديد</h1>
+  <div>
+    <label>اسم الدواء</label>
+    <input id="medName" placeholder="مثال: Panadol" autocomplete="off">
+  </div>
+  <div>
+    <label>الجرعة</label>
+    <input id="medDose" placeholder="مثال: حبة واحدة" value="حبة واحدة" autocomplete="off">
+  </div>
+  <div>
+    <label>وقت الدواء</label>
+    <input id="medTime" type="time" value="08:00">
+  </div>
+  <div>
+    <label>التكرار</label>
+    <select id="medRepeat">
+      <option value="daily">كل يوم</option>
+      <option value="once">مرة واحدة فقط</option>
+    </select>
+  </div>
+  <button class="big" onclick="saveMedicine()">حفظ الدواء</button>
+  <button class="big secondary" onclick="goHome()">إلغاء</button>
+</div>
+
+<div id="alarmScreen" class="screen">
+  <div class="alarm-icon">💊</div>
+  <div class="alarm-med" id="alarmName">—</div>
+  <div class="alarm-time" id="alarmTime">—</div>
+  <div class="alarm-msg">حان وقت الدواء</div>
+  <div class="alarm-time" id="alarmDose"></div>
+  <div style="margin-top:30px; display:flex; flex-direction:column; gap:14px;">
+    <button class="big" style="background:white; color:#2E7D6F;" onclick="takeMedicine()">✅ أخذت الدواء</button>
+    <button class="big" style="background:rgba(255,255,255,0.2); color:white;" onclick="snoozeMedicine()">🔔 ذكرني بعد 10 دقائق</button>
+  </div>
+</div>
+
+<div id="settingsScreen" class="screen">
+  <h1>⚙ الإعدادات</h1>
+  <div>
+    <label>الاسم</label>
+    <input id="settingsName" autocomplete="off">
+  </div>
+  <button class="big" onclick="saveSettingsName()">حفظ الاسم</button>
+  <div>
+    <label>سرعة الكلام: <span id="rateLabel">0.8</span></label>
+    <input id="voiceRate" type="range" min="0.5" max="1.5" step="0.1" value="0.8"
+           oninput="document.getElementById('rateLabel').textContent = this.value; state.voiceRate = parseFloat(this.value); saveData();">
+  </div>
+  <button class="big secondary" onclick="requestPerms()">🔔 طلب صلاحيات الإشعارات</button>
+  <button class="big secondary" onclick="goHome()">رجوع</button>
+</div>
+
+<div id="deleteModal" class="modal-bg">
+  <div class="modal">
+    <h3>حذف الدواء</h3>
+    <p id="deleteText">هل أنت متأكد من حذف هذا الدواء؟</p>
+    <div class="modal-actions">
+      <button style="background:#E0EBE8; color:#1A3C34;" onclick="closeDeleteModal()">إلغاء</button>
+      <button style="background:#D94848; color:white;" onclick="confirmDelete()">🗑 حذف</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'medicine_app_data';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { userName: '', medicines: [], taken: {}, voiceRate: 0.8 };
+}
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state = loadData();
+let currentAlarmMed = null;
+let CapacitorLN = null;
+let isNative = false;
+let pendingDeleteId = null;
+
+async function initCapacitor() {
+  if (typeof Capacitor === 'undefined') {
+    setStatus('⚠️ افتح التطبيق كـ APK للحصول على إشعارات حقيقية', 'warn');
+    return;
+  }
+  isNative = Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+  if (!isNative) {
+    setStatus('⚠️ افتح التطبيق كـ APK للحصول على إشعارات حقيقية', 'warn');
+    return;
+  }
+  try {
+    CapacitorLN = Capacitor.Plugins.LocalNotifications;
+    if (CapacitorLN) await requestPerms();
+  } catch (e) { console.log('[Cap] خطأ:', e); }
+}
+
+function setStatus(text, type) {
+  const el = document.getElementById('statusBar');
+  if (!el) return;
+  el.textContent = text;
+  el.className = type === 'ok' ? 'ok' : (type === 'err' ? 'err' : '');
+}
+
+async function requestPerms() {
+  if (!CapacitorLN) {
+    if ('Notification' in window) {
+      try {
+        const p = await Notification.requestPermission();
+        if (p === 'granted') setStatus('✅ الإشعارات مسموحة', 'ok');
+      } catch (e) {}
+    }
+    return;
+  }
+  try {
+    const result = await CapacitorLN.requestPermissions();
+    if (result.display === 'granted') {
+      setStatus('✅ الإشعارات مسموحة', 'ok');
+    } else {
+      setStatus('❌ يجب السماح بالإشعارات', 'err');
+    }
+  } catch (e) {}
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const bottom = document.getElementById('homeBottom');
+  bottom.style.display = (id === 'homeScreen') ? 'flex' : 'none';
+  if (id === 'homeScreen') renderHome();
+  if (id === 'settingsScreen') {
+    document.getElementById('settingsName').value = state.userName;
+    document.getElementById('voiceRate').value = state.voiceRate;
+    document.getElementById('rateLabel').textContent = state.voiceRate;
+  }
+}
+
+function goHome() { showScreen('homeScreen'); }
+
+function saveName() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) { alert('الرجاء كتابة اسمك'); return; }
+  state.userName = name;
+  saveData();
+  goHome();
+  setStatus('✅ جاهز — أضف أدويتك', 'ok');
+}
+
+function renderHome() {
+  document.getElementById('greeting').textContent = `مرحباً ${state.userName} 👋`;
+  const list = document.getElementById('medList');
+  const today = new Date().toISOString().split('T')[0];
+
+  if (!state.medicines.length) {
+    list.innerHTML = `<div class="empty"><span class="icon">📋</span>لا توجد أدوية بعد<br>اضغط على الزر بالأسفل</div>`;
+    return;
+  }
+
+  const sorted = [...state.medicines].sort((a,b) => a.time.localeCompare(b.time));
+  list.innerHTML = sorted.map(med => {
+    const key = `${med.id}_${today}`;
+    const taken = state.taken[key] === true;
+    return `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">💊</span>
+          <span class="card-name">${escapeHtml(med.name)}</span>
+        </div>
+        <div class="card-info">🕐 الساعة ${formatTime(med.time)}</div>
+        <div class="card-info">الجرعة: ${escapeHtml(med.dose)}</div>
+        <div class="card-info">التكرار: ${med.repeat === 'daily' ? 'كل يوم' : 'مرة واحدة'}</div>
+        <div class="card-status ${taken ? 'status-taken' : 'status-upcoming'}">
+          ${taken ? '✅ تم أخذ الدواء اليوم' : '⏳ قادم'}
+        </div>
+        <div class="card-actions">
+          ${!taken ? `<button class="btn-take" onclick="quickTake('${med.id}')">✅ أخذت</button>` : ''}
+          <button class="btn-delete" onclick="askDelete('${med.id}', '${escapeHtml(med.name)}')">🗑 حذف</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function formatTime(t) {
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  const period = h < 12 ? 'صباحاً' : 'مساءً';
+  const h12 = (h % 12) || 12;
+  return `${String(h12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${period}`;
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function quickTake(medId) {
+  const today = new Date().toISOString().split('T')[0];
+  state.taken[`${medId}_${today}`] = true;
+  saveData();
+  renderHome();
+}
+
+function askDelete(medId, medName) {
+  pendingDeleteId = medId;
+  document.getElementById('deleteText').textContent = `هل أنت متأكد من حذف "${medName}"؟`;
+  document.getElementById('deleteModal').classList.add('show');
+}
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('deleteModal').classList.remove('show');
+}
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  await cancelNotification(pendingDeleteId);
+  state.medicines = state.medicines.filter(m => m.id !== pendingDeleteId);
+  Object.keys(state.taken).forEach(k => {
+    if (k.startsWith(pendingDeleteId + '_')) delete state.taken[k];
+  });
+  saveData();
+  closeDeleteModal();
+  renderHome();
+}
+
+async function scheduleNotification(med) {
+  if (!CapacitorLN) return;
+  const [h, m] = med.time.split(':').map(Number);
+  const now = new Date();
+  let target = new Date();
+  target.setHours(h, m, 0, 0);
+  if (target <= now) {
+    if (med.repeat === 'daily') target.setDate(target.getDate() + 1);
+    else return;
+  }
+  const notifId = parseInt(med.id.slice(-8)) || Math.floor(Math.random() * 100000);
+  const body = `${state.userName}، حان وقت تناول دواء ${med.name}. خذ ${med.dose}.`;
+  try {
+    await CapacitorLN.schedule({
+      notifications: [{
+        id: notifId,
+        title: '💊 موعد الدواء',
+        body: body,
+        schedule: { at: target, allowWhileIdle: true },
+        sound: null,
+        ongoing: false,
+        autoCancel: true,
+        extra: { medicineId: med.id }
+      }]
+    });
+  } catch (e) { console.log('[Cap] ❌ فشل الجدولة:', e); }
+}
+
+async function cancelNotification(medId) {
+  if (!CapacitorLN) return;
+  const notifId = parseInt(medId.slice(-8));
+  try {
+    await CapacitorLN.cancel({ notifications: [{ id: notifId }] });
+  } catch (e) {}
+}
+
+async function saveMedicine() {
+  const name = document.getElementById('medName').value.trim();
+  const dose = document.getElementById('medDose').value.trim() || 'حبة واحدة';
+  const time = document.getElementById('medTime').value;
+  const repeat = document.getElementById('medRepeat').value;
+  if (!name) { alert('الرجاء إدخال اسم الدواء'); return; }
+  if (!time) { alert('الرجاء إدخال وقت الدواء'); return; }
+
+  const med = { id: String(Date.now()), name, dose, time, repeat };
+  state.medicines.push(med);
+  saveData();
+  await scheduleNotification(med);
+
+  document.getElementById('medName').value = '';
+  document.getElementById('medDose').value = 'حبة واحدة';
+  document.getElementById('medTime').value = '08:00';
+
+  alert(`✅ تم حفظ "${name}"\nسيتم تنبيهك الساعة ${formatTime(time)}`);
+  goHome();
+}
+
+function saveSettingsName() {
+  const name = document.getElementById('settingsName').value.trim();
+  if (!name) { alert('الاسم لا يمكن أن يكون فارغاً'); return; }
+  state.userName = name;
+  saveData();
+  alert('✅ تم حفظ الاسم');
+}
+
+let arabicVoice = null;
+function pickArabicVoice() {
+  const voices = window.speechSynthesis?.getVoices?.() || [];
+  arabicVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('ar'))
+             || voices.find(v => /arab/i.test(v.name)) || null;
+}
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = pickArabicVoice;
+  pickArabicVoice();
+  setTimeout(pickArabicVoice, 500);
+  setTimeout(pickArabicVoice, 1500);
+  setInterval(() => {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }
+  }, 10000);
+}
+
+function speak(text, slow) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  if (!arabicVoice) pickArabicVoice();
+  const sentences = text.split(/[.،!؟\n]+/).filter(s => s.trim());
+  let index = 0;
+  function speakNext() {
+    if (index >= sentences.length) return;
+    const sentence = sentences[index].trim();
+    index++;
+    if (!sentence) { speakNext(); return; }
+    const u = new SpeechSynthesisUtterance(sentence);
+    u.lang = 'ar-SA';
+    u.rate = slow ? 0.7 : (parseFloat(state.voiceRate) || 0.85);
+    u.pitch = 1.0;
+    u.volume = 1.0;
+    if (arabicVoice) u.voice = arabicVoice;
+    u.onend = () => setTimeout(speakNext, 300);
+    u.onerror = () => setTimeout(speakNext, 300);
+    window.speechSynthesis.speak(u);
+  }
+  setTimeout(speakNext, 150);
+}
+
+function triggerAlarm(med) {
+  currentAlarmMed = med;
+  document.getElementById('alarmName').textContent = med.name;
+  document.getElementById('alarmTime').textContent = formatTime(med.time);
+  document.getElementById('alarmDose').textContent = `الجرعة: ${med.dose}`;
+  showScreen('alarmScreen');
+
+  const text = `${state.userName}، حان وقت تناول دواء ${med.name}. خذ ${med.dose}.`;
+  speak(text, true);
+  setTimeout(() => speak(text, true), 7000);
+  setTimeout(() => speak(text, true), 14000);
+  if (navigator.vibrate) navigator.vibrate([500, 300, 500, 300, 500]);
+}
+
+function takeMedicine() {
+  if (currentAlarmMed) {
+    const today = new Date().toISOString().split('T')[0];
+    state.taken[`${currentAlarmMed.id}_${today}`] = true;
+    if (currentAlarmMed.repeat === 'once') {
+      state.medicines = state.medicines.filter(m => m.id !== currentAlarmMed.id);
+      cancelNotification(currentAlarmMed.id);
+    }
+    saveData();
+    if (currentAlarmMed.repeat === 'daily') scheduleNotification(currentAlarmMed);
+  }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  currentAlarmMed = null;
+  goHome();
+}
+
+function snoozeMedicine() {
+  if (currentAlarmMed) {
+    const med = currentAlarmMed;
+    setTimeout(() => triggerAlarm(med), 10 * 60 * 1000);
+  }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  currentAlarmMed = null;
+  goHome();
+}
+
+let firedKeys = new Set();
+function checkMedicines() {
+  const now = new Date();
+  const current = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const today = now.toISOString().split('T')[0];
+  state.medicines.forEach(med => {
+    if (med.time !== current) return;
+    const firedKey = `${med.id}_${today}_${current}`;
+    if (state.taken[`${med.id}_${today}`]) return;
+    if (firedKeys.has(firedKey)) return;
+    firedKeys.add(firedKey);
+    triggerAlarm(med);
+  });
+  if (firedKeys.size > 500) firedKeys.clear();
+}
+
+function setupNotificationListener() {
+  if (!CapacitorLN) return;
+  CapacitorLN.addListener('localNotificationActionPerformed', (event) => {
+    const medId = event.notification?.extra?.medicineId;
+    if (medId) {
+      const med = state.medicines.find(m => m.id === medId);
+      if (med) triggerAlarm(med);
+    }
+  });
+  CapacitorLN.addListener('localNotificationReceived', (event) => {
+    const medId = event.notification?.extra?.medicineId;
+    if (medId) {
+      const med = state.medicines.find(m => m.id === medId);
+      if (med) triggerAlarm(med);
+    }
+  });
+}
+
+window.addEventListener('load', async () => {
+  if (state.userName) {
+    showScreen('homeScreen');
+    setStatus('✅ جاهز', 'ok');
+  } else {
+    showScreen('nameScreen');
+  }
+  await initCapacitor();
+  setupNotificationListener();
+  setInterval(checkMedicines, 20000);
+  if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
+  setTimeout(pickArabicVoice, 2000);
+});
+</script>
+</body>
+</html>
