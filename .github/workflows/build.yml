@@ -33,6 +33,21 @@ jobs:
       - name: Sync files
         run: npx cap sync android
 
+      # ✅ إضافة الصلاحيات تلقائياً
+      - name: Add permissions to AndroidManifest
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          echo "📄 قبل التعديل:"
+          cat $MANIFEST
+
+          # إضافة الصلاحيات قبل </manifest>
+          PERMISSIONS='    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />\n    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n    <uses-permission android:name="android.permission.VIBRATE" />'
+
+          sed -i "s|</manifest>|$PERMISSIONS\n</manifest>|" $MANIFEST
+
+          echo "✅ بعد التعديل:"
+          cat $MANIFEST
+
       - name: Build APK
         run: |
           cd android
