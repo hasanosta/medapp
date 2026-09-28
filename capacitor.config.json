@@ -1,0 +1,9 @@
+{
+  "appId": "com.example.medreminder",
+  "appName": "تذكير الأدوية",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true
+  }
+}
