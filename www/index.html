@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -27,6 +26,7 @@
   }
   button.big:active { transform: scale(0.97); }
   button.secondary { background: #E0EBE8; color: #1A3C34; box-shadow: none; }
+  button.danger { background: #D94848; color: white; }
 
   input, select {
     width: 100%; padding: 20px; font-size: 1.5rem;
@@ -61,6 +61,7 @@
   }
   .btn-delete { background: #FFE5E5; color: #C62828; }
   .btn-take   { background: #E8F5E9; color: #2E7D32; }
+  .btn-voice  { background: #E3F2FD; color: #1565C0; }
 
   .bottom-bar {
     position: fixed; bottom: 0; left: 0; right: 0;
@@ -73,6 +74,7 @@
   .empty { text-align: center; padding: 60px 20px; color: #9AB8B0; font-size: 1.2rem; line-height: 1.8; }
   .empty .icon { font-size: 4rem; display: block; margin-bottom: 16px; }
 
+  /* شاشة المنبه */
   #alarmScreen { background: #2E7D6F; color: white; justify-content: center; text-align: center; }
   #alarmScreen h1 { color: white; text-align: center; }
   .alarm-icon { font-size: 6rem; text-align: center; }
@@ -87,6 +89,7 @@
   #statusBar.ok  { background: #D4EDDA; color: #155724; }
   #statusBar.err { background: #F8D7DA; color: #721C24; }
 
+  /* نافذة تأكيد الحذف */
   .modal-bg {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5); display: none;
@@ -105,10 +108,80 @@
     flex: 1; padding: 16px; font-size: 1.1rem;
     border-radius: 14px; border: none; font-weight: bold; font-family: inherit;
   }
+
+  /* قسم التسجيل الصوتي */
+  .voice-section {
+    background: white; border-radius: 20px; padding: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+    border: 2px dashed #D0E5E0;
+  }
+  .voice-section.recording {
+    border-color: #D94848;
+    background: #FFF5F5;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { border-color: #D94848; }
+    50% { border-color: #FFB3B3; }
+  }
+  .voice-title {
+    font-size: 1.2rem; color: #1A3C34; font-weight: bold;
+    text-align: right; margin: 0;
+  }
+  .voice-hint {
+    font-size: 0.95rem; color: #7A9A92;
+    text-align: right; margin: 0;
+    line-height: 1.5;
+  }
+  .voice-status {
+    text-align: center; font-size: 1.1rem;
+    padding: 10px; border-radius: 12px;
+  }
+  .voice-status.empty { background: #F5F9F8; color: #7A9A92; }
+  .voice-status.recorded { background: #E8F5E9; color: #2E7D32; }
+  .voice-status.recording { background: #FFE5E5; color: #C62828; }
+
+  .voice-buttons {
+    display: flex; gap: 10px;
+  }
+  .voice-buttons button {
+    flex: 1; padding: 16px; font-size: 1.1rem;
+    border: none; border-radius: 14px; font-weight: bold;
+    font-family: inherit; cursor: pointer;
+  }
+  .btn-record {
+    background: #2E7D6F; color: white;
+  }
+  .btn-record.active {
+    background: #D94848;
+  }
+  .btn-record:disabled {
+    background: #C8D6D2; color: white;
+  }
+  .btn-play   { background: #E3F2FD; color: #1565C0; }
+  .btn-redo   { background: #FFF3E0; color: #E65100; }
+  .btn-clear  { background: #FFEBEE; color: #C62828; }
+
+  /* عداد التسجيل */
+  .recording-timer {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #D94848;
+    font-variant-numeric: tabular-nums;
+  }
+  .recording-timer .dot {
+    animation: blink 1s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
 </style>
 </head>
 <body>
 
+<!-- شاشة الاسم -->
 <div id="nameScreen" class="screen active" style="justify-content:center;">
   <div style="text-align:center; font-size:5rem;">💊</div>
   <h1 style="text-align:center; font-size:2.5rem;">ما اسمك؟</h1>
@@ -117,20 +190,23 @@
   <button class="big" onclick="saveName()">متابعة</button>
 </div>
 
+<!-- الشاشة الرئيسية -->
 <div id="homeScreen" class="screen has-bottom-bar">
-  <div id="statusBar">جاري التحميل...</div>
+  <div id="statusBar">اضغط في أي مكان لتفعيل الصوت</div>
   <h1 id="greeting">مرحباً 👋</h1>
   <h2>أدويتك اليوم</h2>
   <div id="medList" style="display:flex; flex-direction:column; gap:14px;"></div>
 </div>
 
 <div id="homeBottom" class="bottom-bar" style="display:none;">
-  <button class="big" onclick="showScreen('addScreen')">+ إضافة دواء</button>
+  <button class="big" onclick="goAdd()">+ إضافة دواء</button>
   <button class="big secondary" style="flex:0 0 70px;" onclick="showScreen('settingsScreen')">⚙</button>
 </div>
 
+<!-- إضافة دواء -->
 <div id="addScreen" class="screen">
-  <h1>إضافة دواء جديد</h1>
+  <h1 id="addTitle">إضافة دواء جديد</h1>
+
   <div>
     <label>اسم الدواء</label>
     <input id="medName" placeholder="مثال: Panadol" autocomplete="off">
@@ -150,22 +226,57 @@
       <option value="once">مرة واحدة فقط</option>
     </select>
   </div>
+
+  <!-- قسم التسجيل الصوتي -->
+  <div class="voice-section" id="voiceSection">
+    <p class="voice-title">🎙️ الرسالة الصوتية (اختياري)</p>
+    <p class="voice-hint" id="voiceHint">
+      سجّل صوتك وأنت تقول مثلاً:<br>
+      "محمد، حان وقت دواء Panadol. خذ حبة واحدة."
+    </p>
+
+    <div class="voice-status empty" id="voiceStatus">
+      ما في تسجيل بعد
+    </div>
+
+    <div class="recording-timer" id="recordingTimer" style="display:none;">
+      <span class="dot">●</span> <span id="timerText">0:00</span>
+    </div>
+
+    <div class="voice-buttons" id="voiceButtonsIdle">
+      <button type="button" class="btn-record" id="recordBtn" onclick="toggleRecording()">
+        🎙️ ابدأ التسجيل
+      </button>
+    </div>
+
+    <div class="voice-buttons" id="voiceButtonsRecorded" style="display:none;">
+      <button type="button" class="btn-play" onclick="playRecording()">▶️ تشغيل</button>
+      <button type="button" class="btn-redo" onclick="startRecording()">🔁 إعادة</button>
+      <button type="button" class="btn-clear" onclick="clearRecording()">🗑️ حذف</button>
+    </div>
+  </div>
+
   <button class="big" onclick="saveMedicine()">حفظ الدواء</button>
-  <button class="big secondary" onclick="goHome()">إلغاء</button>
+  <button class="big secondary" onclick="cancelAdd()">إلغاء</button>
 </div>
 
+<!-- شاشة المنبه -->
 <div id="alarmScreen" class="screen">
   <div class="alarm-icon">💊</div>
   <div class="alarm-med" id="alarmName">—</div>
   <div class="alarm-time" id="alarmTime">—</div>
   <div class="alarm-msg">حان وقت الدواء</div>
   <div class="alarm-time" id="alarmDose"></div>
+
+  <audio id="alarmAudio" style="display:none;"></audio>
+
   <div style="margin-top:30px; display:flex; flex-direction:column; gap:14px;">
     <button class="big" style="background:white; color:#2E7D6F;" onclick="takeMedicine()">✅ أخذت الدواء</button>
     <button class="big" style="background:rgba(255,255,255,0.2); color:white;" onclick="snoozeMedicine()">🔔 ذكرني بعد 10 دقائق</button>
   </div>
 </div>
 
+<!-- الإعدادات -->
 <div id="settingsScreen" class="screen">
   <h1>⚙ الإعدادات</h1>
   <div>
@@ -173,15 +284,12 @@
     <input id="settingsName" autocomplete="off">
   </div>
   <button class="big" onclick="saveSettingsName()">حفظ الاسم</button>
-  <div>
-    <label>سرعة الكلام: <span id="rateLabel">0.8</span></label>
-    <input id="voiceRate" type="range" min="0.5" max="1.5" step="0.1" value="0.8"
-           oninput="document.getElementById('rateLabel').textContent = this.value; state.voiceRate = parseFloat(this.value); saveData();">
-  </div>
   <button class="big secondary" onclick="requestPerms()">🔔 طلب صلاحيات الإشعارات</button>
+  <button class="big secondary" onclick="requestMicPerms()">🎙️ طلب صلاحية الميكروفون</button>
   <button class="big secondary" onclick="goHome()">رجوع</button>
 </div>
 
+<!-- نافذة تأكيد الحذف -->
 <div id="deleteModal" class="modal-bg">
   <div class="modal">
     <h3>حذف الدواء</h3>
@@ -194,6 +302,9 @@
 </div>
 
 <script>
+/* =========================================================
+   حالة التطبيق
+   ========================================================= */
 const STORAGE_KEY = 'medicine_app_data';
 
 function loadData() {
@@ -201,7 +312,7 @@ function loadData() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch (e) {}
-  return { userName: '', medicines: [], taken: {}, voiceRate: 0.8 };
+  return { userName: '', medicines: [], taken: {} };
 }
 function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -212,17 +323,18 @@ let currentAlarmMed = null;
 let CapacitorLN = null;
 let isNative = false;
 let pendingDeleteId = null;
+let editingMedId = null;
 
+/* =========================================================
+   إعداد Capacitor
+   ========================================================= */
 async function initCapacitor() {
   if (typeof Capacitor === 'undefined') {
     setStatus('⚠️ افتح التطبيق كـ APK للحصول على إشعارات حقيقية', 'warn');
     return;
   }
   isNative = Capacitor.isNativePlatform && Capacitor.isNativePlatform();
-  if (!isNative) {
-    setStatus('⚠️ افتح التطبيق كـ APK للحصول على إشعارات حقيقية', 'warn');
-    return;
-  }
+  if (!isNative) return;
   try {
     CapacitorLN = Capacitor.Plugins.LocalNotifications;
     if (CapacitorLN) await requestPerms();
@@ -236,26 +348,40 @@ function setStatus(text, type) {
   el.className = type === 'ok' ? 'ok' : (type === 'err' ? 'err' : '');
 }
 
+/* =========================================================
+   الصلاحيات
+   ========================================================= */
 async function requestPerms() {
   if (!CapacitorLN) {
     if ('Notification' in window) {
       try {
         const p = await Notification.requestPermission();
         if (p === 'granted') setStatus('✅ الإشعارات مسموحة', 'ok');
+        else setStatus('❌ الإشعارات مرفوضة', 'err');
       } catch (e) {}
     }
     return;
   }
   try {
     const result = await CapacitorLN.requestPermissions();
-    if (result.display === 'granted') {
-      setStatus('✅ الإشعارات مسموحة', 'ok');
-    } else {
-      setStatus('❌ يجب السماح بالإشعارات', 'err');
-    }
+    if (result.display === 'granted') setStatus('✅ الإشعارات مسموحة', 'ok');
+    else setStatus('❌ يجب السماح بالإشعارات', 'err');
   } catch (e) {}
 }
 
+async function requestMicPerms() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(t => t.stop());
+    alert('✅ صلاحية الميكروفون مسموحة');
+  } catch (e) {
+    alert('❌ يجب السماح بالوصول للميكروفون من إعدادات الجوال');
+  }
+}
+
+/* =========================================================
+   التنقل
+   ========================================================= */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -264,12 +390,31 @@ function showScreen(id) {
   if (id === 'homeScreen') renderHome();
   if (id === 'settingsScreen') {
     document.getElementById('settingsName').value = state.userName;
-    document.getElementById('voiceRate').value = state.voiceRate;
-    document.getElementById('rateLabel').textContent = state.voiceRate;
   }
 }
 
-function goHome() { showScreen('homeScreen'); }
+function goHome() {
+  editingMedId = null;
+  clearRecording();
+  showScreen('homeScreen');
+}
+
+function goAdd() {
+  editingMedId = null;
+  clearRecording();
+  document.getElementById('addTitle').textContent = 'إضافة دواء جديد';
+  document.getElementById('medName').value = '';
+  document.getElementById('medDose').value = 'حبة واحدة';
+  document.getElementById('medTime').value = '08:00';
+  document.getElementById('medRepeat').value = 'daily';
+  showScreen('addScreen');
+}
+
+function cancelAdd() {
+  clearRecording();
+  editingMedId = null;
+  goHome();
+}
 
 function saveName() {
   const name = document.getElementById('nameInput').value.trim();
@@ -277,9 +422,12 @@ function saveName() {
   state.userName = name;
   saveData();
   goHome();
-  setStatus('✅ جاهز — أضف أدويتك', 'ok');
+  setStatus('✅ جاهز', 'ok');
 }
 
+/* =========================================================
+   عرض الأدوية
+   ========================================================= */
 function renderHome() {
   document.getElementById('greeting').textContent = `مرحباً ${state.userName} 👋`;
   const list = document.getElementById('medList');
@@ -294,6 +442,7 @@ function renderHome() {
   list.innerHTML = sorted.map(med => {
     const key = `${med.id}_${today}`;
     const taken = state.taken[key] === true;
+    const hasVoice = med.voice ? '🎙️ ' : '';
     return `
       <div class="card">
         <div class="card-header">
@@ -303,11 +452,13 @@ function renderHome() {
         <div class="card-info">🕐 الساعة ${formatTime(med.time)}</div>
         <div class="card-info">الجرعة: ${escapeHtml(med.dose)}</div>
         <div class="card-info">التكرار: ${med.repeat === 'daily' ? 'كل يوم' : 'مرة واحدة'}</div>
+        ${med.voice ? `<div class="card-info">${hasVoice}رسالة صوتية مسجلة</div>` : ''}
         <div class="card-status ${taken ? 'status-taken' : 'status-upcoming'}">
           ${taken ? '✅ تم أخذ الدواء اليوم' : '⏳ قادم'}
         </div>
         <div class="card-actions">
           ${!taken ? `<button class="btn-take" onclick="quickTake('${med.id}')">✅ أخذت</button>` : ''}
+          <button class="btn-voice" onclick="editMedicine('${med.id}')">✏️ تعديل</button>
           <button class="btn-delete" onclick="askDelete('${med.id}', '${escapeHtml(med.name)}')">🗑 حذف</button>
         </div>
       </div>`;
@@ -325,13 +476,236 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function quickTake(medId) {
-  const today = new Date().toISOString().split('T')[0];
-  state.taken[`${medId}_${today}`] = true;
-  saveData();
-  renderHome();
+/* =========================================================
+   🎙️ نظام التسجيل الصوتي
+   ========================================================= */
+let mediaRecorder = null;
+let audioChunks = [];
+let recordingInterval = null;
+let recordingSeconds = 0;
+let currentRecordingBlob = null;   // التسجيل الحالي
+let currentRecordingUrl = null;    // رابط التشغيل
+
+// متغيرات لمحرر الصوت
+let audioCtx = null;
+
+function pickMimeType() {
+  const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+  for (const t of types) {
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return '';
 }
 
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mimeType = pickMimeType();
+    const options = mimeType ? { mimeType } : {};
+    mediaRecorder = new MediaRecorder(stream, options);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
+      currentRecordingBlob = blob;
+      if (currentRecordingUrl) URL.revokeObjectURL(currentRecordingUrl);
+      currentRecordingUrl = URL.createObjectURL(blob);
+      stream.getTracks().forEach(t => t.stop());
+      updateVoiceUI('recorded');
+    };
+
+    mediaRecorder.start();
+    recordingSeconds = 0;
+    document.getElementById('voiceSection').classList.add('recording');
+    document.getElementById('recordingTimer').style.display = 'block';
+    document.getElementById('timerText').textContent = '0:00';
+
+    recordingInterval = setInterval(() => {
+      recordingSeconds++;
+      const m = Math.floor(recordingSeconds / 60);
+      const s = recordingSeconds % 60;
+      document.getElementById('timerText').textContent = `${m}:${String(s).padStart(2,'0')}`;
+      if (recordingSeconds >= 30) stopRecording();  // حد أقصى 30 ثانية
+    }, 1000);
+
+    updateVoiceUI('recording');
+  } catch (e) {
+    console.log('[Rec] خطأ:', e);
+    alert('❌ ما قدرنا نوصل للميكروفون.\nتأكد من السماح بالوصول للميكروفون من إعدادات الجوال.');
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  if (recordingInterval) {
+    clearInterval(recordingInterval);
+    recordingInterval = null;
+  }
+  document.getElementById('voiceSection').classList.remove('recording');
+  document.getElementById('recordingTimer').style.display = 'none';
+}
+
+function toggleRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+function playRecording() {
+  if (!currentRecordingUrl) return;
+  const audio = new Audio(currentRecordingUrl);
+  audio.play().catch(e => console.log('[Play]', e));
+}
+
+function clearRecording() {
+  currentRecordingBlob = null;
+  if (currentRecordingUrl) {
+    URL.revokeObjectURL(currentRecordingUrl);
+    currentRecordingUrl = null;
+  }
+  updateVoiceUI('empty');
+}
+
+function updateVoiceUI(status) {
+  const statusEl = document.getElementById('voiceStatus');
+  const idleBtns = document.getElementById('voiceButtonsIdle');
+  const recBtns = document.getElementById('voiceButtonsRecorded');
+  const recordBtn = document.getElementById('recordBtn');
+
+  if (status === 'empty') {
+    statusEl.className = 'voice-status empty';
+    statusEl.textContent = 'ما في تسجيل بعد';
+    idleBtns.style.display = 'flex';
+    recBtns.style.display = 'none';
+    recordBtn.textContent = '🎙️ ابدأ التسجيل';
+  } else if (status === 'recording') {
+    statusEl.className = 'voice-status recording';
+    statusEl.textContent = '🔴 جاري التسجيل... اضغط "إيقاف" لما تخلص';
+    idleBtns.style.display = 'flex';
+    recBtns.style.display = 'none';
+    recordBtn.textContent = '⏹️ إيقاف التسجيل';
+  } else if (status === 'recorded') {
+    statusEl.className = 'voice-status recorded';
+    statusEl.textContent = '✅ في تسجيل — جاهز للحفظ';
+    idleBtns.style.display = 'none';
+    recBtns.style.display = 'flex';
+  }
+}
+
+// تحويل Blob لـ Base64 (للتخزين في localStorage)
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// تحويل Base64 لـ Blob للاستخدام لاحقاً
+function base64ToBlob(dataUrl) {
+  try {
+    const [header, base64] = dataUrl.split(',');
+    const mime = header.match(/:(.*?);/)[1];
+    const binary = atob(base64);
+    const array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
+    return new Blob([array], { type: mime });
+  } catch (e) {
+    console.log('[B64] خطأ:', e);
+    return null;
+  }
+}
+
+/* =========================================================
+   حفظ/تعديل دواء
+   ========================================================= */
+async function saveMedicine() {
+  const name = document.getElementById('medName').value.trim();
+  const dose = document.getElementById('medDose').value.trim() || 'حبة واحدة';
+  const time = document.getElementById('medTime').value;
+  const repeat = document.getElementById('medRepeat').value;
+
+  if (!name) { alert('الرجاء إدخال اسم الدواء'); return; }
+  if (!time) { alert('الرجاء إدخال وقت الدواء'); return; }
+
+  // تحويل التسجيل لـ Base64
+  let voiceData = null;
+  if (currentRecordingBlob) {
+    try {
+      voiceData = await blobToBase64(currentRecordingBlob);
+    } catch (e) {
+      console.log('[Save] خطأ في التسجيل:', e);
+    }
+  }
+
+  if (editingMedId) {
+    // تعديل
+    const med = state.medicines.find(m => m.id === editingMedId);
+    if (med) {
+      med.name = name;
+      med.dose = dose;
+      med.time = time;
+      med.repeat = repeat;
+      if (voiceData) med.voice = voiceData;
+      await cancelNotification(med.id);
+      await scheduleNotification(med);
+    }
+    alert('✅ تم تحديث الدواء');
+  } else {
+    // إضافة جديدة
+    const med = {
+      id: String(Date.now()),
+      name, dose, time, repeat,
+      voice: voiceData
+    };
+    state.medicines.push(med);
+    await scheduleNotification(med);
+    alert(`✅ تم حفظ "${name}"\nسيرن الساعة ${formatTime(time)}`);
+  }
+
+  saveData();
+  clearRecording();
+  editingMedId = null;
+  goHome();
+}
+
+function editMedicine(medId) {
+  const med = state.medicines.find(m => m.id === medId);
+  if (!med) return;
+  editingMedId = medId;
+  document.getElementById('addTitle').textContent = 'تعديل دواء';
+  document.getElementById('medName').value = med.name;
+  document.getElementById('medDose').value = med.dose;
+  document.getElementById('medTime').value = med.time;
+  document.getElementById('medRepeat').value = med.repeat;
+
+  clearRecording();
+  if (med.voice) {
+    try {
+      const blob = base64ToBlob(med.voice);
+      if (blob) {
+        currentRecordingBlob = blob;
+        if (currentRecordingUrl) URL.revokeObjectURL(currentRecordingUrl);
+        currentRecordingUrl = URL.createObjectURL(blob);
+        updateVoiceUI('recorded');
+      }
+    } catch (e) { console.log(e); }
+  }
+  showScreen('addScreen');
+}
+
+/* =========================================================
+   حذف دواء
+   ========================================================= */
 function askDelete(medId, medName) {
   pendingDeleteId = medId;
   document.getElementById('deleteText').textContent = `هل أنت متأكد من حذف "${medName}"؟`;
@@ -353,6 +727,16 @@ async function confirmDelete() {
   renderHome();
 }
 
+function quickTake(medId) {
+  const today = new Date().toISOString().split('T')[0];
+  state.taken[`${medId}_${today}`] = true;
+  saveData();
+  renderHome();
+}
+
+/* =========================================================
+   ⏰ التنبيهات
+   ========================================================= */
 async function scheduleNotification(med) {
   if (!CapacitorLN) return;
   const [h, m] = med.time.split(':').map(Number);
@@ -389,35 +773,9 @@ async function cancelNotification(medId) {
   } catch (e) {}
 }
 
-async function saveMedicine() {
-  const name = document.getElementById('medName').value.trim();
-  const dose = document.getElementById('medDose').value.trim() || 'حبة واحدة';
-  const time = document.getElementById('medTime').value;
-  const repeat = document.getElementById('medRepeat').value;
-  if (!name) { alert('الرجاء إدخال اسم الدواء'); return; }
-  if (!time) { alert('الرجاء إدخال وقت الدواء'); return; }
-
-  const med = { id: String(Date.now()), name, dose, time, repeat };
-  state.medicines.push(med);
-  saveData();
-  await scheduleNotification(med);
-
-  document.getElementById('medName').value = '';
-  document.getElementById('medDose').value = 'حبة واحدة';
-  document.getElementById('medTime').value = '08:00';
-
-  alert(`✅ تم حفظ "${name}"\nسيتم تنبيهك الساعة ${formatTime(time)}`);
-  goHome();
-}
-
-function saveSettingsName() {
-  const name = document.getElementById('settingsName').value.trim();
-  if (!name) { alert('الاسم لا يمكن أن يكون فارغاً'); return; }
-  state.userName = name;
-  saveData();
-  alert('✅ تم حفظ الاسم');
-}
-
+/* =========================================================
+   🔊 النطق (احتياطي فقط)
+   ========================================================= */
 let arabicVoice = null;
 function pickArabicVoice() {
   const voices = window.speechSynthesis?.getVoices?.() || [];
@@ -429,37 +787,24 @@ if ('speechSynthesis' in window) {
   pickArabicVoice();
   setTimeout(pickArabicVoice, 500);
   setTimeout(pickArabicVoice, 1500);
-  setInterval(() => {
-    if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.pause();
-      window.speechSynthesis.resume();
-    }
-  }, 10000);
 }
 
-function speak(text, slow) {
+function speakFallback(text) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
   if (!arabicVoice) pickArabicVoice();
-  const sentences = text.split(/[.،!؟\n]+/).filter(s => s.trim());
-  let index = 0;
-  function speakNext() {
-    if (index >= sentences.length) return;
-    const sentence = sentences[index].trim();
-    index++;
-    if (!sentence) { speakNext(); return; }
-    const u = new SpeechSynthesisUtterance(sentence);
-    u.lang = 'ar-SA';
-    u.rate = slow ? 0.7 : (parseFloat(state.voiceRate) || 0.85);
-    u.pitch = 1.0;
-    u.volume = 1.0;
-    if (arabicVoice) u.voice = arabicVoice;
-    u.onend = () => setTimeout(speakNext, 300);
-    u.onerror = () => setTimeout(speakNext, 300);
-    window.speechSynthesis.speak(u);
-  }
-  setTimeout(speakNext, 150);
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ar-SA';
+  u.rate = 0.7;
+  if (arabicVoice) u.voice = arabicVoice;
+  window.speechSynthesis.speak(u);
 }
+
+/* =========================================================
+   🔔 شاشة المنبه
+   ========================================================= */
+let alarmAudioEl = null;
+let alarmSpeakTimeouts = [];
 
 function triggerAlarm(med) {
   currentAlarmMed = med;
@@ -468,11 +813,49 @@ function triggerAlarm(med) {
   document.getElementById('alarmDose').textContent = `الجرعة: ${med.dose}`;
   showScreen('alarmScreen');
 
-  const text = `${state.userName}، حان وقت تناول دواء ${med.name}. خذ ${med.dose}.`;
-  speak(text, true);
-  setTimeout(() => speak(text, true), 7000);
-  setTimeout(() => speak(text, true), 14000);
+  // إيقاف أي صوت سابق
+  stopAllAlarmSounds();
+
+  // 🎙️ إذا في تسجيل صوتي → شغّله
+  if (med.voice) {
+    try {
+      const blob = base64ToBlob(med.voice);
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        alarmAudioEl = new Audio(url);
+        alarmAudioEl.loop = true;  // يعيد التسجيل
+        alarmAudioEl.volume = 1.0;
+        alarmAudioEl.play().catch(e => {
+          console.log('[Alarm] الصوت مرفوض من المتصفح:', e);
+          // حاول مرة ثانية بعد ثانية
+          setTimeout(() => alarmAudioEl.play().catch(()=>{}), 1000);
+        });
+        // حاول 3 مرات (للتغلب على منع autoplay)
+        setTimeout(() => { if (alarmAudioEl && alarmAudioEl.paused) alarmAudioEl.play().catch(()=>{}); }, 500);
+        setTimeout(() => { if (alarmAudioEl && alarmAudioEl.paused) alarmAudioEl.play().catch(()=>{}); }, 2000);
+      }
+    } catch (e) {
+      console.log('[Alarm] خطأ في التسجيل:', e);
+    }
+  } else {
+    // ما في تسجيل → استخدم TTS
+    const text = `${state.userName}، حان وقت تناول دواء ${med.name}. خذ ${med.dose}.`;
+    speakFallback(text);
+    alarmSpeakTimeouts.push(setTimeout(() => speakFallback(text), 7000));
+    alarmSpeakTimeouts.push(setTimeout(() => speakFallback(text), 14000));
+  }
+
   if (navigator.vibrate) navigator.vibrate([500, 300, 500, 300, 500]);
+}
+
+function stopAllAlarmSounds() {
+  if (alarmAudioEl) {
+    try { alarmAudioEl.pause(); alarmAudioEl.currentTime = 0; } catch(e){}
+    alarmAudioEl = null;
+  }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  alarmSpeakTimeouts.forEach(t => clearTimeout(t));
+  alarmSpeakTimeouts = [];
 }
 
 function takeMedicine() {
@@ -486,7 +869,7 @@ function takeMedicine() {
     saveData();
     if (currentAlarmMed.repeat === 'daily') scheduleNotification(currentAlarmMed);
   }
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  stopAllAlarmSounds();
   currentAlarmMed = null;
   goHome();
 }
@@ -496,11 +879,14 @@ function snoozeMedicine() {
     const med = currentAlarmMed;
     setTimeout(() => triggerAlarm(med), 10 * 60 * 1000);
   }
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  stopAllAlarmSounds();
   currentAlarmMed = null;
   goHome();
 }
 
+/* =========================================================
+   فحص داخلي (احتياطي)
+   ========================================================= */
 let firedKeys = new Set();
 function checkMedicines() {
   const now = new Date();
@@ -535,6 +921,9 @@ function setupNotificationListener() {
   });
 }
 
+/* =========================================================
+   الإقلاع
+   ========================================================= */
 window.addEventListener('load', async () => {
   if (state.userName) {
     showScreen('homeScreen');
