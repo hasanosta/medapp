@@ -26,7 +26,6 @@
   }
   button.big:active { transform: scale(0.97); }
   button.secondary { background: #E0EBE8; color: #1A3C34; box-shadow: none; }
-  button.danger { background: #D94848; color: white; }
 
   input, select {
     width: 100%; padding: 20px; font-size: 1.5rem;
@@ -55,7 +54,7 @@
 
   .card-actions { display: flex; gap: 10px; margin-top: 8px; }
   .card-actions button {
-    flex: 1; padding: 14px; font-size: 1.1rem;
+    flex: 1; padding: 14px; font-size: 1rem;
     border: none; border-radius: 14px; font-weight: bold;
     font-family: inherit; cursor: pointer;
   }
@@ -74,13 +73,18 @@
   .empty { text-align: center; padding: 60px 20px; color: #9AB8B0; font-size: 1.2rem; line-height: 1.8; }
   .empty .icon { font-size: 4rem; display: block; margin-bottom: 16px; }
 
-  /* شاشة المنبه */
   #alarmScreen { background: #2E7D6F; color: white; justify-content: center; text-align: center; }
   #alarmScreen h1 { color: white; text-align: center; }
   .alarm-icon { font-size: 6rem; text-align: center; }
   .alarm-med  { font-size: 3rem; font-weight: bold; text-align: center; margin: 10px 0; }
   .alarm-time { font-size: 1.8rem; text-align: center; color: #A8D5CA; }
   .alarm-msg  { font-size: 1.8rem; text-align: center; margin: 20px 0; }
+  .alarm-playing {
+    font-size: 1.1rem; color: #FFF3CD;
+    background: rgba(255,255,255,0.15);
+    padding: 10px; border-radius: 12px;
+    text-align: center; margin: 10px 0;
+  }
 
   #statusBar {
     background: #FFF3CD; color: #856404; padding: 10px;
@@ -89,7 +93,6 @@
   #statusBar.ok  { background: #D4EDDA; color: #155724; }
   #statusBar.err { background: #F8D7DA; color: #721C24; }
 
-  /* نافذة تأكيد الحذف */
   .modal-bg {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5); display: none;
@@ -109,7 +112,6 @@
     border-radius: 14px; border: none; font-weight: bold; font-family: inherit;
   }
 
-  /* قسم التسجيل الصوتي */
   .voice-section {
     background: white; border-radius: 20px; padding: 20px;
     display: flex; flex-direction: column; gap: 14px;
@@ -124,55 +126,30 @@
     0%, 100% { border-color: #D94848; }
     50% { border-color: #FFB3B3; }
   }
-  .voice-title {
-    font-size: 1.2rem; color: #1A3C34; font-weight: bold;
-    text-align: right; margin: 0;
-  }
-  .voice-hint {
-    font-size: 0.95rem; color: #7A9A92;
-    text-align: right; margin: 0;
-    line-height: 1.5;
-  }
-  .voice-status {
-    text-align: center; font-size: 1.1rem;
-    padding: 10px; border-radius: 12px;
-  }
+  .voice-title { font-size: 1.2rem; color: #1A3C34; font-weight: bold; text-align: right; margin: 0; }
+  .voice-hint { font-size: 0.95rem; color: #7A9A92; text-align: right; margin: 0; line-height: 1.5; }
+  .voice-status { text-align: center; font-size: 1.1rem; padding: 10px; border-radius: 12px; }
   .voice-status.empty { background: #F5F9F8; color: #7A9A92; }
   .voice-status.recorded { background: #E8F5E9; color: #2E7D32; }
   .voice-status.recording { background: #FFE5E5; color: #C62828; }
 
-  .voice-buttons {
-    display: flex; gap: 10px;
-  }
+  .voice-buttons { display: flex; gap: 10px; }
   .voice-buttons button {
     flex: 1; padding: 16px; font-size: 1.1rem;
     border: none; border-radius: 14px; font-weight: bold;
     font-family: inherit; cursor: pointer;
   }
-  .btn-record {
-    background: #2E7D6F; color: white;
-  }
-  .btn-record.active {
-    background: #D94848;
-  }
-  .btn-record:disabled {
-    background: #C8D6D2; color: white;
-  }
+  .btn-record { background: #2E7D6F; color: white; }
+  .btn-record.active { background: #D94848; }
   .btn-play   { background: #E3F2FD; color: #1565C0; }
   .btn-redo   { background: #FFF3E0; color: #E65100; }
   .btn-clear  { background: #FFEBEE; color: #C62828; }
 
-  /* عداد التسجيل */
   .recording-timer {
-    text-align: center;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #D94848;
-    font-variant-numeric: tabular-nums;
+    text-align: center; font-size: 2rem; font-weight: bold;
+    color: #D94848; font-variant-numeric: tabular-nums;
   }
-  .recording-timer .dot {
-    animation: blink 1s infinite;
-  }
+  .recording-timer .dot { animation: blink 1s infinite; }
   @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
@@ -190,9 +167,9 @@
   <button class="big" onclick="saveName()">متابعة</button>
 </div>
 
-<!-- الشاشة الرئيسية -->
+<!-- الرئيسية -->
 <div id="homeScreen" class="screen has-bottom-bar">
-  <div id="statusBar">اضغط في أي مكان لتفعيل الصوت</div>
+  <div id="statusBar">جاري التحميل...</div>
   <h1 id="greeting">مرحباً 👋</h1>
   <h2>أدويتك اليوم</h2>
   <div id="medList" style="display:flex; flex-direction:column; gap:14px;"></div>
@@ -227,11 +204,10 @@
     </select>
   </div>
 
-  <!-- قسم التسجيل الصوتي -->
   <div class="voice-section" id="voiceSection">
-    <p class="voice-title">🎙️ الرسالة الصوتية (اختياري)</p>
+    <p class="voice-title">🎙️ رسالة صوتية (مهم)</p>
     <p class="voice-hint" id="voiceHint">
-      سجّل صوتك وأنت تقول مثلاً:<br>
+      سجّل صوتك وأنت تقول:<br>
       "محمد، حان وقت دواء Panadol. خذ حبة واحدة."
     </p>
 
@@ -267,8 +243,7 @@
   <div class="alarm-time" id="alarmTime">—</div>
   <div class="alarm-msg">حان وقت الدواء</div>
   <div class="alarm-time" id="alarmDose"></div>
-
-  <audio id="alarmAudio" style="display:none;"></audio>
+  <div class="alarm-playing" id="alarmPlaying">🔊 جاري تشغيل الرسالة الصوتية...</div>
 
   <div style="margin-top:30px; display:flex; flex-direction:column; gap:14px;">
     <button class="big" style="background:white; color:#2E7D6F;" onclick="takeMedicine()">✅ أخذت الدواء</button>
@@ -286,6 +261,7 @@
   <button class="big" onclick="saveSettingsName()">حفظ الاسم</button>
   <button class="big secondary" onclick="requestPerms()">🔔 طلب صلاحيات الإشعارات</button>
   <button class="big secondary" onclick="requestMicPerms()">🎙️ طلب صلاحية الميكروفون</button>
+  <button class="big secondary" onclick="testNotification()">🔔 اختبار الإشعار</button>
   <button class="big secondary" onclick="goHome()">رجوع</button>
 </div>
 
@@ -303,7 +279,7 @@
 
 <script>
 /* =========================================================
-   حالة التطبيق
+   الحالة
    ========================================================= */
 const STORAGE_KEY = 'medicine_app_data';
 
@@ -314,9 +290,7 @@ function loadData() {
   } catch (e) {}
   return { userName: '', medicines: [], taken: {} };
 }
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
 let state = loadData();
 let currentAlarmMed = null;
@@ -326,19 +300,31 @@ let pendingDeleteId = null;
 let editingMedId = null;
 
 /* =========================================================
-   إعداد Capacitor
+   Capacitor
    ========================================================= */
 async function initCapacitor() {
   if (typeof Capacitor === 'undefined') {
-    setStatus('⚠️ افتح التطبيق كـ APK للحصول على إشعارات حقيقية', 'warn');
+    setStatus('⚠️ افتح التطبيق كـ APK', 'warn');
     return;
   }
   isNative = Capacitor.isNativePlatform && Capacitor.isNativePlatform();
   if (!isNative) return;
   try {
     CapacitorLN = Capacitor.Plugins.LocalNotifications;
-    if (CapacitorLN) await requestPerms();
-  } catch (e) { console.log('[Cap] خطأ:', e); }
+    if (CapacitorLN) {
+      await CapacitorLN.createChannel({
+        id: 'medication-alarm',
+        name: 'منبه الأدوية',
+        description: 'تنبيهات مواعيد الأدوية',
+        importance: 5,  // MAX
+        sound: 'default',
+        vibration: true,
+        lights: true,
+        lightColor: '#2E7D6F'
+      }).catch(e => console.log('Channel:', e));
+      await requestPerms();
+    }
+  } catch (e) { console.log('[Cap]', e); }
 }
 
 function setStatus(text, type) {
@@ -357,7 +343,6 @@ async function requestPerms() {
       try {
         const p = await Notification.requestPermission();
         if (p === 'granted') setStatus('✅ الإشعارات مسموحة', 'ok');
-        else setStatus('❌ الإشعارات مرفوضة', 'err');
       } catch (e) {}
     }
     return;
@@ -376,6 +361,31 @@ async function requestMicPerms() {
     alert('✅ صلاحية الميكروفون مسموحة');
   } catch (e) {
     alert('❌ يجب السماح بالوصول للميكروفون من إعدادات الجوال');
+  }
+}
+
+/* =========================================================
+   اختبار الإشعار
+   ========================================================= */
+async function testNotification() {
+  if (!CapacitorLN) { alert('هذه الميزة تعمل فقط في APK'); return; }
+  try {
+    await CapacitorLN.schedule({
+      notifications: [{
+        id: 9999,
+        title: '🔔 اختبار الإشعار',
+        body: 'هذا اختبار. اضغط عليّ لفتح التطبيق.',
+        schedule: { at: new Date(Date.now() + 5000), allowWhileIdle: true },
+        sound: 'default',
+        channelId: 'medication-alarm',
+        ongoing: false,
+        autoCancel: true,
+        extra: { test: true }
+      }]
+    });
+    alert('✅ سيصل إشعار بعد 5 ثواني.\nاقفل الشاشة أو اخرج من التطبيق، وانتظر.');
+  } catch (e) {
+    alert('❌ فشل الإرسال: ' + e.message);
   }
 }
 
@@ -410,11 +420,7 @@ function goAdd() {
   showScreen('addScreen');
 }
 
-function cancelAdd() {
-  clearRecording();
-  editingMedId = null;
-  goHome();
-}
+function cancelAdd() { clearRecording(); editingMedId = null; goHome(); }
 
 function saveName() {
   const name = document.getElementById('nameInput').value.trim();
@@ -442,7 +448,6 @@ function renderHome() {
   list.innerHTML = sorted.map(med => {
     const key = `${med.id}_${today}`;
     const taken = state.taken[key] === true;
-    const hasVoice = med.voice ? '🎙️ ' : '';
     return `
       <div class="card">
         <div class="card-header">
@@ -452,7 +457,7 @@ function renderHome() {
         <div class="card-info">🕐 الساعة ${formatTime(med.time)}</div>
         <div class="card-info">الجرعة: ${escapeHtml(med.dose)}</div>
         <div class="card-info">التكرار: ${med.repeat === 'daily' ? 'كل يوم' : 'مرة واحدة'}</div>
-        ${med.voice ? `<div class="card-info">${hasVoice}رسالة صوتية مسجلة</div>` : ''}
+        ${med.voice ? `<div class="card-info">🎙️ رسالة صوتية مسجلة</div>` : ''}
         <div class="card-status ${taken ? 'status-taken' : 'status-upcoming'}">
           ${taken ? '✅ تم أخذ الدواء اليوم' : '⏳ قادم'}
         </div>
@@ -477,17 +482,14 @@ function escapeHtml(s) {
 }
 
 /* =========================================================
-   🎙️ نظام التسجيل الصوتي
+   التسجيل الصوتي
    ========================================================= */
 let mediaRecorder = null;
 let audioChunks = [];
 let recordingInterval = null;
 let recordingSeconds = 0;
-let currentRecordingBlob = null;   // التسجيل الحالي
-let currentRecordingUrl = null;    // رابط التشغيل
-
-// متغيرات لمحرر الصوت
-let audioCtx = null;
+let currentRecordingBlob = null;
+let currentRecordingUrl = null;
 
 function pickMimeType() {
   const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
@@ -529,34 +531,26 @@ async function startRecording() {
       const m = Math.floor(recordingSeconds / 60);
       const s = recordingSeconds % 60;
       document.getElementById('timerText').textContent = `${m}:${String(s).padStart(2,'0')}`;
-      if (recordingSeconds >= 30) stopRecording();  // حد أقصى 30 ثانية
+      if (recordingSeconds >= 30) stopRecording();
     }, 1000);
 
     updateVoiceUI('recording');
   } catch (e) {
-    console.log('[Rec] خطأ:', e);
-    alert('❌ ما قدرنا نوصل للميكروفون.\nتأكد من السماح بالوصول للميكروفون من إعدادات الجوال.');
+    console.log('[Rec]', e);
+    alert('❌ ما قدرنا نوصل للميكروفون.\nتأكد من السماح بالوصول للميكروفون.');
   }
 }
 
 function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop();
-  }
-  if (recordingInterval) {
-    clearInterval(recordingInterval);
-    recordingInterval = null;
-  }
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  if (recordingInterval) { clearInterval(recordingInterval); recordingInterval = null; }
   document.getElementById('voiceSection').classList.remove('recording');
   document.getElementById('recordingTimer').style.display = 'none';
 }
 
 function toggleRecording() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    stopRecording();
-  } else {
-    startRecording();
-  }
+  if (mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
+  else startRecording();
 }
 
 function playRecording() {
@@ -588,7 +582,7 @@ function updateVoiceUI(status) {
     recordBtn.textContent = '🎙️ ابدأ التسجيل';
   } else if (status === 'recording') {
     statusEl.className = 'voice-status recording';
-    statusEl.textContent = '🔴 جاري التسجيل... اضغط "إيقاف" لما تخلص';
+    statusEl.textContent = '🔴 جاري التسجيل...';
     idleBtns.style.display = 'flex';
     recBtns.style.display = 'none';
     recordBtn.textContent = '⏹️ إيقاف التسجيل';
@@ -600,7 +594,6 @@ function updateVoiceUI(status) {
   }
 }
 
-// تحويل Blob لـ Base64 (للتخزين في localStorage)
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -610,7 +603,6 @@ function blobToBase64(blob) {
   });
 }
 
-// تحويل Base64 لـ Blob للاستخدام لاحقاً
 function base64ToBlob(dataUrl) {
   try {
     const [header, base64] = dataUrl.split(',');
@@ -619,14 +611,11 @@ function base64ToBlob(dataUrl) {
     const array = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
     return new Blob([array], { type: mime });
-  } catch (e) {
-    console.log('[B64] خطأ:', e);
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 /* =========================================================
-   حفظ/تعديل دواء
+   حفظ / تعديل دواء
    ========================================================= */
 async function saveMedicine() {
   const name = document.getElementById('medName').value.trim();
@@ -636,19 +625,17 @@ async function saveMedicine() {
 
   if (!name) { alert('الرجاء إدخال اسم الدواء'); return; }
   if (!time) { alert('الرجاء إدخال وقت الدواء'); return; }
+  if (!currentRecordingBlob) {
+    if (!confirm('ما سجّلت رسالة صوتية.\nهل تريد الحفظ بدون صوت؟')) return;
+  }
 
-  // تحويل التسجيل لـ Base64
   let voiceData = null;
   if (currentRecordingBlob) {
-    try {
-      voiceData = await blobToBase64(currentRecordingBlob);
-    } catch (e) {
-      console.log('[Save] خطأ في التسجيل:', e);
-    }
+    try { voiceData = await blobToBase64(currentRecordingBlob); }
+    catch (e) { console.log('[Save]', e); }
   }
 
   if (editingMedId) {
-    // تعديل
     const med = state.medicines.find(m => m.id === editingMedId);
     if (med) {
       med.name = name;
@@ -661,7 +648,6 @@ async function saveMedicine() {
     }
     alert('✅ تم تحديث الدواء');
   } else {
-    // إضافة جديدة
     const med = {
       id: String(Date.now()),
       name, dose, time, repeat,
@@ -698,7 +684,7 @@ function editMedicine(medId) {
         currentRecordingUrl = URL.createObjectURL(blob);
         updateVoiceUI('recorded');
       }
-    } catch (e) { console.log(e); }
+    } catch (e) {}
   }
   showScreen('addScreen');
 }
@@ -735,7 +721,7 @@ function quickTake(medId) {
 }
 
 /* =========================================================
-   ⏰ التنبيهات
+   ⏰ جدولة الإشعارات
    ========================================================= */
 async function scheduleNotification(med) {
   if (!CapacitorLN) return;
@@ -748,33 +734,34 @@ async function scheduleNotification(med) {
     else return;
   }
   const notifId = parseInt(med.id.slice(-8)) || Math.floor(Math.random() * 100000);
-  const body = `${state.userName}، حان وقت تناول دواء ${med.name}. خذ ${med.dose}.`;
+
   try {
     await CapacitorLN.schedule({
       notifications: [{
         id: notifId,
         title: '💊 موعد الدواء',
-        body: body,
+        body: `حان وقت دواء ${med.name}. اضغط لفتح التطبيق.`,
         schedule: { at: target, allowWhileIdle: true },
-        sound: null,
+        sound: 'default',
+        channelId: 'medication-alarm',
         ongoing: false,
         autoCancel: true,
+        priority: 2,  // MAX
         extra: { medicineId: med.id }
       }]
     });
-  } catch (e) { console.log('[Cap] ❌ فشل الجدولة:', e); }
+    console.log(`[Cap] ✅ جدولة "${med.name}" في ${target.toLocaleString('ar')}`);
+  } catch (e) { console.log('[Cap] ❌ فشل:', e); }
 }
 
 async function cancelNotification(medId) {
   if (!CapacitorLN) return;
   const notifId = parseInt(medId.slice(-8));
-  try {
-    await CapacitorLN.cancel({ notifications: [{ id: notifId }] });
-  } catch (e) {}
+  try { await CapacitorLN.cancel({ notifications: [{ id: notifId }] }); } catch (e) {}
 }
 
 /* =========================================================
-   🔊 النطق (احتياطي فقط)
+   🔊 النطق (احتياطي)
    ========================================================= */
 let arabicVoice = null;
 function pickArabicVoice() {
@@ -786,7 +773,6 @@ if ('speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = pickArabicVoice;
   pickArabicVoice();
   setTimeout(pickArabicVoice, 500);
-  setTimeout(pickArabicVoice, 1500);
 }
 
 function speakFallback(text) {
@@ -813,32 +799,41 @@ function triggerAlarm(med) {
   document.getElementById('alarmDose').textContent = `الجرعة: ${med.dose}`;
   showScreen('alarmScreen');
 
-  // إيقاف أي صوت سابق
   stopAllAlarmSounds();
 
-  // 🎙️ إذا في تسجيل صوتي → شغّله
+  const playingMsg = document.getElementById('alarmPlaying');
+
   if (med.voice) {
+    // 🎙️ صوت المستخدم
+    playingMsg.textContent = '🔊 جاري تشغيل الرسالة الصوتية...';
     try {
       const blob = base64ToBlob(med.voice);
       if (blob) {
         const url = URL.createObjectURL(blob);
         alarmAudioEl = new Audio(url);
-        alarmAudioEl.loop = true;  // يعيد التسجيل
+        alarmAudioEl.loop = true;
         alarmAudioEl.volume = 1.0;
-        alarmAudioEl.play().catch(e => {
-          console.log('[Alarm] الصوت مرفوض من المتصفح:', e);
-          // حاول مرة ثانية بعد ثانية
-          setTimeout(() => alarmAudioEl.play().catch(()=>{}), 1000);
-        });
-        // حاول 3 مرات (للتغلب على منع autoplay)
-        setTimeout(() => { if (alarmAudioEl && alarmAudioEl.paused) alarmAudioEl.play().catch(()=>{}); }, 500);
-        setTimeout(() => { if (alarmAudioEl && alarmAudioEl.paused) alarmAudioEl.play().catch(()=>{}); }, 2000);
+
+        // محاولات متعددة لتشغيل الصوت
+        const playAttempt = () => {
+          alarmAudioEl.play().then(() => {
+            console.log('[Alarm] ✅ الصوت يعمل');
+            playingMsg.textContent = '🔊 الرسالة الصوتية تعمل';
+          }).catch(e => {
+            console.log('[Alarm] فشل التشغيل:', e);
+          });
+        };
+        playAttempt();
+        setTimeout(playAttempt, 500);
+        setTimeout(playAttempt, 1500);
       }
     } catch (e) {
-      console.log('[Alarm] خطأ في التسجيل:', e);
+      console.log('[Alarm]', e);
+      speakFallback(`${state.userName}، حان وقت دواء ${med.name}.`);
     }
   } else {
-    // ما في تسجيل → استخدم TTS
+    // ما في تسجيل → TTS
+    playingMsg.textContent = '🔊 جاري النطق...';
     const text = `${state.userName}، حان وقت تناول دواء ${med.name}. خذ ${med.dose}.`;
     speakFallback(text);
     alarmSpeakTimeouts.push(setTimeout(() => speakFallback(text), 7000));
@@ -885,7 +880,7 @@ function snoozeMedicine() {
 }
 
 /* =========================================================
-   فحص داخلي (احتياطي)
+   فحص داخلي
    ========================================================= */
 let firedKeys = new Set();
 function checkMedicines() {
@@ -903,21 +898,28 @@ function checkMedicines() {
   if (firedKeys.size > 500) firedKeys.clear();
 }
 
+/* =========================================================
+   الاستماع للإشعار
+   ========================================================= */
 function setupNotificationListener() {
   if (!CapacitorLN) return;
+
+  // عند الضغط على الإشعار
   CapacitorLN.addListener('localNotificationActionPerformed', (event) => {
+    console.log('[Cap] 📱 تم الضغط على الإشعار:', event);
     const medId = event.notification?.extra?.medicineId;
     if (medId) {
       const med = state.medicines.find(m => m.id === medId);
-      if (med) triggerAlarm(med);
+      if (med) {
+        // نأجل قليلاً لين يكتمل فتح التطبيق
+        setTimeout(() => triggerAlarm(med), 500);
+      }
     }
   });
+
+  // استقبال الإشعار والتطبيق مفتوح
   CapacitorLN.addListener('localNotificationReceived', (event) => {
-    const medId = event.notification?.extra?.medicineId;
-    if (medId) {
-      const med = state.medicines.find(m => m.id === medId);
-      if (med) triggerAlarm(med);
-    }
+    console.log('[Cap] 🔔 وصل إشعار:', event);
   });
 }
 
@@ -931,9 +933,12 @@ window.addEventListener('load', async () => {
   } else {
     showScreen('nameScreen');
   }
+
   await initCapacitor();
   setupNotificationListener();
+
   setInterval(checkMedicines, 20000);
+
   if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
   setTimeout(pickArabicVoice, 2000);
 });
