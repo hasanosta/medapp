@@ -17,6 +17,7 @@
   .screen.active { display: flex; }
   h1 { font-size: 2rem; margin: 0; text-align: right; }
   h2 { font-size: 1.4rem; margin: 0; color: #5A7A72; font-weight: normal; text-align: right; }
+  h3 { font-size: 1.15rem; margin: 0 0 10px; color: #1A3C34; text-align: right; }
 
   button.big {
     width: 100%; padding: 22px; font-size: 1.5rem; font-weight: bold;
@@ -36,6 +37,7 @@
   input:focus, select:focus { outline: none; border-color: #2E7D6F; }
   label { font-size: 1.2rem; color: #5A7A72; display: block; margin-bottom: 8px; text-align: right; }
 
+  /* ====== البطاقة (بدون تغيير) ====== */
   .card {
     background: white; border-radius: 24px; padding: 18px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.06);
@@ -51,10 +53,12 @@
   }
   .status-upcoming { background: #FFF8E1; color: #B8860B; }
   .status-taken    { background: #E8F5E9; color: #2E7D32; }
+  .status-missed   { background: #FFEBEE; color: #C62828; }
+  .status-now      { background: #FFE5E5; color: #C62828; }
 
-  .card-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .card-actions { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
   .card-actions button {
-    flex: 1; padding: 14px; font-size: 1rem;
+    flex: 1; min-width: 90px; padding: 14px; font-size: 1rem;
     border: none; border-radius: 14px; font-weight: bold;
     font-family: inherit; cursor: pointer;
   }
@@ -66,6 +70,7 @@
     position: fixed; bottom: 0; left: 0; right: 0;
     padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
     background: #F5F9F8; display: flex; gap: 10px;
+    z-index: 40;
   }
   .bottom-bar .big { flex: 1; }
   .has-bottom-bar { padding-bottom: 120px !important; }
@@ -73,6 +78,7 @@
   .empty { text-align: center; padding: 60px 20px; color: #9AB8B0; font-size: 1.2rem; line-height: 1.8; }
   .empty .icon { font-size: 4rem; display: block; margin-bottom: 16px; }
 
+  /* ====== شاشة المنبه ====== */
   #alarmScreen { background: #2E7D6F; color: white; justify-content: center; text-align: center; }
   #alarmScreen h1 { color: white; text-align: center; }
   .alarm-icon { font-size: 6rem; text-align: center; }
@@ -86,13 +92,17 @@
     text-align: center; margin: 10px 0;
   }
 
+  /* ====== شريط الحالة ====== */
   #statusBar {
     background: #FFF3CD; color: #856404; padding: 10px;
     border-radius: 12px; font-size: 0.95rem; text-align: center;
+    display: none;
   }
+  #statusBar.show { display: block; }
   #statusBar.ok  { background: #D4EDDA; color: #155724; }
   #statusBar.err { background: #F8D7DA; color: #721C24; }
 
+  /* ====== Modal ====== */
   .modal-bg {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5); display: none;
@@ -102,7 +112,8 @@
   .modal-bg.show { display: flex; }
   .modal {
     background: white; border-radius: 24px; padding: 24px;
-    max-width: 400px; width: 100%; text-align: center;
+    max-width: 500px; width: 100%; text-align: center;
+    max-height: 90vh; overflow-y: auto;
   }
   .modal h3 { font-size: 1.5rem; margin: 0 0 12px; color: #1A3C34; }
   .modal p { font-size: 1.1rem; color: #5A7A72; margin: 0 0 20px; }
@@ -112,6 +123,7 @@
     border-radius: 14px; border: none; font-weight: bold; font-family: inherit;
   }
 
+  /* ====== قسم التسجيل الصوتي (بدون تغيير) ====== */
   .voice-section {
     background: white; border-radius: 20px; padding: 20px;
     display: flex; flex-direction: column; gap: 14px;
@@ -154,11 +166,111 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
   }
+
+  /* ====== قسم الجدولة (جديد) ====== */
+  .schedule-section {
+    background: white; border-radius: 20px; padding: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+    border: 2px solid #D0E5E0;
+  }
+  .schedule-title { font-size: 1.2rem; color: #1A3C34; font-weight: bold; text-align: right; margin: 0; }
+
+  /* أزرار نوع التكرار */
+  .repeat-options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .repeat-option {
+    padding: 16px 8px; font-size: 1rem; font-weight: bold;
+    border: 2px solid #D0E5E0; border-radius: 14px;
+    background: white; color: #1A3C34;
+    font-family: inherit; cursor: pointer;
+    text-align: center;
+  }
+  .repeat-option.active {
+    background: #2E7D6F; color: white; border-color: #2E7D6F;
+  }
+
+  /* اختيار أيام الأسبوع */
+  .weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+  }
+  .weekday-btn {
+    padding: 12px 4px; font-size: 0.9rem; font-weight: bold;
+    border: 2px solid #D0E5E0; border-radius: 12px;
+    background: white; color: #1A3C34;
+    font-family: inherit; cursor: pointer;
+  }
+  .weekday-btn.active {
+    background: #2E7D6F; color: white; border-color: #2E7D6F;
+  }
+
+  /* حقل + رقم */
+  .inline-field {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .inline-field label {
+    margin: 0; flex: 0 0 auto;
+  }
+  .inline-field input {
+    flex: 1; text-align: center;
+  }
+
+  /* أوقات متعددة */
+  .times-list { display: flex; flex-direction: column; gap: 8px; }
+  .time-row {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .time-row input[type="time"] {
+    flex: 1;
+  }
+  .time-row button {
+    flex: 0 0 50px; padding: 14px; font-size: 1.2rem;
+    border: none; border-radius: 12px; font-weight: bold;
+    background: #FFEBEE; color: #C62828; cursor: pointer;
+  }
+  .add-time-btn {
+    padding: 14px; font-size: 1rem; font-weight: bold;
+    border: 2px dashed #2E7D6F; border-radius: 12px;
+    background: #F5F9F8; color: #2E7D6F;
+    font-family: inherit; cursor: pointer;
+  }
+
+  /* نص عرض الجدول */
+  .schedule-summary {
+    background: #F5F9F8; border-radius: 12px; padding: 12px;
+    font-size: 1rem; color: #2E7D6F; font-weight: bold;
+    text-align: center;
+  }
+
+  /* سجل الجرعات */
+  .history-item {
+    background: white; border-radius: 16px; padding: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 1.05rem; gap: 10px;
+  }
+  .history-item .time { color: #5A7A72; font-weight: bold; min-width: 70px; }
+  .history-item .name { flex: 1; text-align: right; }
+  .history-item .status { font-weight: bold; }
+  .history-item .status.taken { color: #2E7D32; }
+  .history-item .status.missed { color: #C62828; }
+  .history-item .status.snoozed { color: #E65100; }
+  .history-item .status.upcoming { color: #B8860B; }
+
+  /* أزرار Snooze */
+  .snooze-options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-top: 20px;
+  }
+  .snooze-options button {
+    padding: 18px; font-size: 1.2rem; font-weight: bold;
+    border: none; border-radius: 16px; font-family: inherit; cursor: pointer;
+    background: rgba(255,255,255,0.2); color: white;
+  }
 </style>
 </head>
 <body>
 
-<!-- شاشة الاسم -->
+<!-- ============ شاشة الاسم ============ -->
 <div id="nameScreen" class="screen active" style="justify-content:center;">
   <div style="text-align:center; font-size:5rem;">💊</div>
   <h1 style="text-align:center; font-size:2.5rem;">ما اسمك؟</h1>
@@ -167,12 +279,17 @@
   <button class="big" onclick="saveName()">متابعة</button>
 </div>
 
-<!-- الرئيسية -->
+<!-- ============ الرئيسية ============ -->
 <div id="homeScreen" class="screen has-bottom-bar">
-  <div id="statusBar">جاري التحميل...</div>
+  <div id="statusBar"></div>
   <h1 id="greeting">مرحباً 👋</h1>
   <h2>أدويتك اليوم</h2>
   <div id="medList" style="display:flex; flex-direction:column; gap:14px;"></div>
+
+  <div id="historySection" style="display:none; margin-top:24px;">
+    <h2 style="margin-bottom:12px;">📋 سجل اليوم</h2>
+    <div id="historyList" style="display:flex; flex-direction:column; gap:10px;"></div>
+  </div>
 </div>
 
 <div id="homeBottom" class="bottom-bar" style="display:none;">
@@ -180,7 +297,7 @@
   <button class="big secondary" style="flex:0 0 70px;" onclick="showScreen('settingsScreen')">⚙</button>
 </div>
 
-<!-- إضافة دواء -->
+<!-- ============ إضافة / تعديل دواء ============ -->
 <div id="addScreen" class="screen">
   <h1 id="addTitle">إضافة دواء جديد</h1>
 
@@ -192,42 +309,49 @@
     <label>الجرعة</label>
     <input id="medDose" placeholder="مثال: حبة واحدة" value="حبة واحدة" autocomplete="off">
   </div>
-  <div>
-    <label>وقت الدواء</label>
-    <input id="medTime" type="time" value="08:00">
-  </div>
-  <div>
-    <label>التكرار</label>
-    <select id="medRepeat">
-      <option value="daily">كل يوم</option>
-      <option value="once">مرة واحدة فقط</option>
-    </select>
+
+  <!-- ============ قسم الجدولة (جديد) ============ -->
+  <div class="schedule-section">
+    <p class="schedule-title">🕐 متى تريد أخذ الدواء؟</p>
+
+    <!-- أزرار نوع التكرار -->
+    <div class="repeat-options" id="repeatOptions">
+      <button type="button" class="repeat-option" data-type="once"      onclick="selectRepeatType('once')">مرة واحدة</button>
+      <button type="button" class="repeat-option" data-type="daily"     onclick="selectRepeatType('daily')">كل يوم</button>
+      <button type="button" class="repeat-option" data-type="everyHours" onclick="selectRepeatType('everyHours')">كل ساعات</button>
+      <button type="button" class="repeat-option" data-type="weekdays"  onclick="selectRepeatType('weekdays')">أيام محددة</button>
+      <button type="button" class="repeat-option" data-type="everyDays" onclick="selectRepeatType('everyDays')">كل أيام</button>
+      <button type="button" class="repeat-option" data-type="monthly"   onclick="selectRepeatType('monthly')">يوم من الشهر</button>
+    </div>
+
+    <!-- محتوى ديناميكي حسب النوع -->
+    <div id="scheduleContent"></div>
+
+    <!-- ملخص الجدول -->
+    <div class="schedule-summary" id="scheduleSummary">—</div>
   </div>
 
+  <!-- ============ التسجيل الصوتي ============ -->
   <div class="voice-section" id="voiceSection">
     <p class="voice-title">🎙️ رسالة صوتية (مهم)</p>
     <p class="voice-hint" id="voiceHint">
-      سجّل صوتك وأنت تقول:<br>
+      سجّل صوتك وأنت تقول مثلاً:<br>
       "محمد، حان وقت دواء Panadol. خذ حبة واحدة."
     </p>
 
-    <div class="voice-status empty" id="voiceStatus">
-      ما في تسجيل بعد
-    </div>
+    <div class="voice-status empty" id="voiceStatus">ما في تسجيل بعد</div>
 
     <div class="recording-timer" id="recordingTimer" style="display:none;">
       <span class="dot">●</span> <span id="timerText">0:00</span>
     </div>
 
     <div class="voice-buttons" id="voiceButtonsIdle">
-      <button type="button" class="btn-record" id="recordBtn" onclick="toggleRecording()">
-        🎙️ ابدأ التسجيل
-      </button>
+      <button type="button" class="btn-record" id="recordBtn" onclick="toggleRecording()">🎙️ ابدأ التسجيل</button>
     </div>
 
     <div class="voice-buttons" id="voiceButtonsRecorded" style="display:none;">
-      <button type="button" class="btn-play" onclick="playRecording()">▶️ تشغيل</button>
-      <button type="button" class="btn-redo" onclick="startRecording()">🔁 إعادة</button>
+      <button type="button" class="btn-play"  onclick="playRecording()">▶️ تشغيل</button>
+      <button type="button" class="btn-redo"  onclick="startRecording()">🔁 إعادة</button>
       <button type="button" class="btn-clear" onclick="clearRecording()">🗑️ حذف</button>
     </div>
   </div>
@@ -236,7 +360,7 @@
   <button class="big secondary" onclick="cancelAdd()">إلغاء</button>
 </div>
 
-<!-- شاشة المنبه -->
+<!-- ============ شاشة المنبه ============ -->
 <div id="alarmScreen" class="screen">
   <div class="alarm-icon">💊</div>
   <div class="alarm-med" id="alarmName">—</div>
@@ -247,11 +371,17 @@
 
   <div style="margin-top:30px; display:flex; flex-direction:column; gap:14px;">
     <button class="big" style="background:white; color:#2E7D6F;" onclick="takeMedicine()">✅ أخذت الدواء</button>
-    <button class="big" style="background:rgba(255,255,255,0.2); color:white;" onclick="snoozeMedicine()">🔔 ذكرني بعد 10 دقائق</button>
+    <div style="color:white; font-size:1.1rem; margin-top:10px;">🔔 ذكّرني بعد:</div>
+    <div class="snooze-options">
+      <button onclick="snoozeMedicine(5)">5 دقائق</button>
+      <button onclick="snoozeMedicine(10)">10 دقائق</button>
+      <button onclick="snoozeMedicine(15)">15 دقيقة</button>
+      <button onclick="snoozeMedicine(30)">30 دقيقة</button>
+    </div>
   </div>
 </div>
 
-<!-- الإعدادات -->
+<!-- ============ الإعدادات ============ -->
 <div id="settingsScreen" class="screen">
   <h1>⚙ الإعدادات</h1>
   <div>
@@ -259,13 +389,15 @@
     <input id="settingsName" autocomplete="off">
   </div>
   <button class="big" onclick="saveSettingsName()">حفظ الاسم</button>
-  <button class="big secondary" onclick="requestPerms()">🔔 طلب صلاحيات الإشعارات</button>
-  <button class="big secondary" onclick="requestMicPerms()">🎙️ طلب صلاحية الميكروفون</button>
-  <button class="big secondary" onclick="testNotification()">🔔 اختبار الإشعار</button>
+  <button class="big secondary" onclick="requestPerms()">🔔 صلاحيات الإشعارات</button>
+  <button class="big secondary" onclick="requestMicPerms()">🎙️ صلاحية الميكروفون</button>
+  <button class="big secondary" onclick="requestExactAlarmPerms()">⏰ صلاحية المنبه الدقيق</button>
+  <button class="big secondary" onclick="testAlarmNow()">🧪 جرّب المنبه الآن</button>
+  <button class="big secondary" onclick="testNotification()">🔔 اختبار الإشعار (5 ثواني)</button>
   <button class="big secondary" onclick="goHome()">رجوع</button>
 </div>
 
-<!-- نافذة تأكيد الحذف -->
+<!-- ============ Modal تأكيد الحذف ============ -->
 <div id="deleteModal" class="modal-bg">
   <div class="modal">
     <h3>حذف الدواء</h3>
@@ -277,51 +409,214 @@
   </div>
 </div>
 
+<!-- ============ Modal بدون صوت ============ -->
+<div id="noVoiceModal" class="modal-bg">
+  <div class="modal">
+    <h3>ما سجلت رسالة صوتية</h3>
+    <p>سيتم استخدام الصوت الآلي (TTS) بدلاً من صوتك.</p>
+    <div class="modal-actions">
+      <button style="background:#E0EBE8; color:#1A3C34;" onclick="closeNoVoiceModal()">رجوع للتسجيل</button>
+      <button style="background:#2E7D6F; color:white;" onclick="confirmSaveWithoutVoice()">حفظ بدون تسجيل</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* =========================================================
-   الحالة
+   0) أدوات عامة
+   ========================================================= */
+function getLocalDateKey(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function getLocalTimeKey(d = new Date()) {
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+function medIdToNotifId(medId) {
+  let hash = 0;
+  const s = String(medId);
+  for (let i = 0; i < s.length; i++) {
+    hash = ((hash << 5) - hash) + s.charCodeAt(i);
+    hash = hash & 0x7FFFFFFF;
+  }
+  return hash || 1;
+}
+function scheduleToNotifId(medId, scheduleId, occurrenceIndex) {
+  // Base من medId + scheduleId
+  let hash = 0;
+  const s = String(medId) + "_" + String(scheduleId);
+  for (let i = 0; i < s.length; i++) {
+    hash = ((hash << 5) - hash) + s.charCodeAt(i);
+    hash = hash & 0x7FFFFFFF;
+  }
+  // أضف occurrence index (مضروب في رقم كبير) + تأكد أنه موجب 31-bit
+  const combined = (hash + occurrenceIndex * 1000003) & 0x7FFFFFFF;
+  return combined || 1;
+}
+function snoozeNotifId(medId, scheduleId) {
+  let hash = 0;
+  const s = "snooze_" + String(medId) + "_" + String(scheduleId);
+  for (let i = 0; i < s.length; i++) {
+    hash = ((hash << 5) - hash) + s.charCodeAt(i);
+    hash = hash & 0x7FFFFFFF;
+  }
+  return (hash + 500000) & 0x7FFFFFFF || 2;
+}
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+/* =========================================================
+   1) التخزين + Migration
    ========================================================= */
 const STORAGE_KEY = 'medicine_app_data';
+const STORAGE_VERSION = 3; // رُفعت من 2 إلى 3
+
+const DEFAULTS = {
+  version: STORAGE_VERSION,
+  userName: '',
+  medicines: [],
+  taken: {},
+  history: [],
+  occurrences: {} // 🔑 سجل الجرعات المخططة: { "medId_schedId_YYYY-MM-DD_HH:MM": { status, updatedAt } }
+};
 
 function loadData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  return { userName: '', medicines: [], taken: {} };
+  let raw = null;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+  if (!raw) return { ...DEFAULTS };
+  let data;
+  try { data = JSON.parse(raw); } catch (e) {
+    console.warn('[Storage] JSON تالف');
+    return { ...DEFAULTS };
+  }
+  return normalizeData(data);
 }
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function normalizeData(data) {
+  if (!data || typeof data !== 'object') return { ...DEFAULTS };
+  const out = { ...DEFAULTS, ...data };
+
+  if (typeof out.userName !== 'string') out.userName = '';
+
+  // تطبيع taken
+  if (typeof out.taken !== 'object' || out.taken === null || Array.isArray(out.taken)) out.taken = {};
+  // تطبيع history
+  if (!Array.isArray(out.history)) out.history = [];
+  // تطبيع occurrences
+  if (typeof out.occurrences !== 'object' || out.occurrences === null || Array.isArray(out.occurrences)) out.occurrences = {};
+
+  // تطبيع medicines + Migration
+  if (!Array.isArray(out.medicines)) out.medicines = [];
+  out.medicines = out.medicines
+    .filter(m => m && typeof m === 'object')
+    .map(m => migrateMedicine(m));
+
+  out.version = STORAGE_VERSION;
+  return out;
+}
+
+/** تحويل دواء من بنية قديمة إلى بنية جديدة */
+function migrateMedicine(m) {
+  // بنية جديدة موجودة؟
+  if (Array.isArray(m.schedules) && m.schedules.length > 0) {
+    return {
+      id: m.id || uid(),
+      name: m.name || 'دواء',
+      dose: m.dose || 'حبة واحدة',
+      voice: typeof m.voice === 'string' ? m.voice : null,
+      schedules: m.schedules.map(s => normalizeSchedule(s))
+    };
+  }
+
+  // بنية قديمة: { time, repeat }
+  const oldTime = (typeof m.time === 'string' && /^\d{2}:\d{2}$/.test(m.time)) ? m.time : '08:00';
+  const oldRepeat = m.repeat === 'once' ? 'once' : 'daily';
+
+  return {
+    id: m.id || uid(),
+    name: m.name || 'دواء',
+    dose: m.dose || 'حبة واحدة',
+    voice: typeof m.voice === 'string' ? m.voice : null,
+    schedules: [normalizeSchedule({
+      id: uid(),
+      type: oldRepeat,
+      times: [oldTime],
+      startDate: getLocalDateKey(),
+      endDate: null
+    })]
+  };
+}
+
+function normalizeSchedule(s) {
+  if (!s || typeof s !== 'object') return null;
+  const out = {
+    id: s.id || uid(),
+    type: s.type || 'daily',
+    times: Array.isArray(s.times) && s.times.length ? s.times.filter(t => /^\d{2}:\d{2}$/.test(t)) : ['08:00'],
+    startDate: typeof s.startDate === 'string' ? s.startDate : getLocalDateKey(),
+    endDate: typeof s.endDate === 'string' ? s.endDate : null,
+    weekdays: Array.isArray(s.weekdays) ? s.weekdays : [],  // [0..6] الأحد=0
+    dayOfMonth: typeof s.dayOfMonth === 'number' ? s.dayOfMonth : 1,
+    intervalHours: typeof s.intervalHours === 'number' ? s.intervalHours : 8,
+    intervalDays: typeof s.intervalDays === 'number' ? s.intervalDays : 2
+  };
+  return out;
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return true;
+  } catch (e) {
+    console.error('[Storage] فشل الحفظ:', e);
+    if (e.name === 'QuotaExceededError') {
+      setStatus('⚠️ الذاكرة ممتلئة.', 'err');
+    }
+    return false;
+  }
+}
 
 let state = loadData();
-let currentAlarmMed = null;
+let currentAlarmMed = null;       // { medicineId, scheduleId, occurrenceKey }
 let CapacitorLN = null;
+let CapacitorApp = null;
 let isNative = false;
 let pendingDeleteId = null;
 let editingMedId = null;
+let pendingSaveData = null;
+let listenersRegistered = false;
+let selectedRepeatType = 'daily';
 
 /* =========================================================
-   Capacitor
+   2) Capacitor
    ========================================================= */
+const CHANNEL_ID = 'medication-alarm';
+
 async function initCapacitor() {
-  if (typeof Capacitor === 'undefined') {
-    setStatus('⚠️ افتح التطبيق كـ APK', 'warn');
-    return;
-  }
+  if (typeof Capacitor === 'undefined') return;
   isNative = Capacitor.isNativePlatform && Capacitor.isNativePlatform();
   if (!isNative) return;
+
   try {
     CapacitorLN = Capacitor.Plugins.LocalNotifications;
+    CapacitorApp = Capacitor.Plugins.App;
+
     if (CapacitorLN) {
       await CapacitorLN.createChannel({
-        id: 'medication-alarm',
+        id: CHANNEL_ID,
         name: 'منبه الأدوية',
         description: 'تنبيهات مواعيد الأدوية',
-        importance: 5,  // MAX
+        importance: 5,
+        visibility: 1,
         sound: 'default',
         vibration: true,
         lights: true,
         lightColor: '#2E7D6F'
-      }).catch(e => console.log('Channel:', e));
+      }).catch(e => console.log('Channel exists:', e));
       await requestPerms();
     }
   } catch (e) { console.log('[Cap]', e); }
@@ -330,12 +625,14 @@ async function initCapacitor() {
 function setStatus(text, type) {
   const el = document.getElementById('statusBar');
   if (!el) return;
+  if (!text) { el.classList.remove('show'); return; }
   el.textContent = text;
-  el.className = type === 'ok' ? 'ok' : (type === 'err' ? 'err' : '');
+  el.className = 'show ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : '');
+  if (type === 'ok') setTimeout(() => { el.classList.remove('show'); }, 3000);
 }
 
 /* =========================================================
-   الصلاحيات
+   3) الصلاحيات
    ========================================================= */
 async function requestPerms() {
   if (!CapacitorLN) {
@@ -353,75 +650,95 @@ async function requestPerms() {
     else setStatus('❌ يجب السماح بالإشعارات', 'err');
   } catch (e) {}
 }
-
 async function requestMicPerms() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach(t => t.stop());
     alert('✅ صلاحية الميكروفون مسموحة');
   } catch (e) {
-    alert('❌ يجب السماح بالوصول للميكروفون من إعدادات الجوال');
+    alert('❌ يجب السماح بالميكروفون من الإعدادات');
   }
+}
+function requestExactAlarmPerms() {
+  alert('إذا كانت التنبيهات لا تصل بدقة، افتح:\nالإعدادات → التطبيقات → تذكير الأدوية → المنبهات والتذكيرات → اسمح');
 }
 
 /* =========================================================
-   اختبار الإشعار
+   4) اختبار الإشعارات
    ========================================================= */
 async function testNotification() {
-  if (!CapacitorLN) { alert('هذه الميزة تعمل فقط في APK'); return; }
+  if (!CapacitorLN) { alert('يعمل فقط في APK'); return; }
   try {
     await CapacitorLN.schedule({
       notifications: [{
-        id: 9999,
+        id: 999999,
         title: '🔔 اختبار الإشعار',
         body: 'هذا اختبار. اضغط عليّ لفتح التطبيق.',
-        schedule: { at: new Date(Date.now() + 5000), allowWhileIdle: true },
+        schedule: { at: new Date(Date.now() + 5000), allowWhileIdle: true, channelId: CHANNEL_ID },
         sound: 'default',
-        channelId: 'medication-alarm',
-        ongoing: false,
+        channelId: CHANNEL_ID,
         autoCancel: true,
-        extra: { test: true }
+        extra: { kind: 'test' }
       }]
     });
-    alert('✅ سيصل إشعار بعد 5 ثواني.\nاقفل الشاشة أو اخرج من التطبيق، وانتظر.');
-  } catch (e) {
-    alert('❌ فشل الإرسال: ' + e.message);
+    alert('✅ سيصل إشعار بعد 5 ثواني');
+  } catch (e) { alert('❌ فشل: ' + e.message); }
+}
+
+/** 🔔 اختبار المنبه الكامل — يفتح شاشة المنبه فوراً */
+function testAlarmNow() {
+  // استخدم أول دواء موجود، أو أنشئ دواء تجريبي
+  let med = state.medicines[0];
+  let schedule = med?.schedules?.[0];
+  if (!med || !schedule) {
+    med = { id: 'test_med', name: 'دواء تجريبي', dose: 'حبة واحدة', voice: null };
+    schedule = { id: 'test_sched', times: ['00:00'], type: 'daily' };
   }
+  const nowTime = getLocalTimeKey();
+  triggerAlarm(med.id, schedule.id, {
+    key: `${med.id}_${schedule.id}_${getLocalDateKey()}_${nowTime}`,
+    date: getLocalDateKey(),
+    time: nowTime
+  });
 }
 
 /* =========================================================
-   التنقل
+   5) التنقل
    ========================================================= */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
   const bottom = document.getElementById('homeBottom');
-  bottom.style.display = (id === 'homeScreen') ? 'flex' : 'none';
+  if (bottom) bottom.style.display = (id === 'homeScreen') ? 'flex' : 'none';
   if (id === 'homeScreen') renderHome();
   if (id === 'settingsScreen') {
-    document.getElementById('settingsName').value = state.userName;
+    document.getElementById('settingsName').value = state.userName || '';
   }
 }
-
 function goHome() {
   editingMedId = null;
   clearRecording();
   showScreen('homeScreen');
 }
-
 function goAdd() {
   editingMedId = null;
   clearRecording();
   document.getElementById('addTitle').textContent = 'إضافة دواء جديد';
   document.getElementById('medName').value = '';
   document.getElementById('medDose').value = 'حبة واحدة';
-  document.getElementById('medTime').value = '08:00';
-  document.getElementById('medRepeat').value = 'daily';
+  // الافتراضي: كل يوم
+  selectedRepeatType = 'daily';
+  updateRepeatButtons();
+  renderScheduleContent();
+  updateScheduleSummary();
   showScreen('addScreen');
 }
-
 function cancelAdd() { clearRecording(); editingMedId = null; goHome(); }
 
+/* =========================================================
+   6) الاسم
+   ========================================================= */
 function saveName() {
   const name = document.getElementById('nameInput').value.trim();
   if (!name) { alert('الرجاء كتابة اسمك'); return; }
@@ -430,59 +747,685 @@ function saveName() {
   goHome();
   setStatus('✅ جاهز', 'ok');
 }
+function saveSettingsName() {
+  const name = document.getElementById('settingsName').value.trim();
+  if (!name) { alert('الاسم لا يمكن أن يكون فارغاً'); return; }
+  state.userName = name;
+  saveData();
+  document.getElementById('greeting').textContent = `مرحباً ${name} 👋`;
+  setStatus('✅ تم حفظ الاسم', 'ok');
+}
 
 /* =========================================================
-   عرض الأدوية
+   7) محرك الجدولة (Scheduler Engine)
+   ========================================================= */
+
+/** احسب المواعيد القادمة من schedule في نافذة زمنية محددة */
+function computeScheduleOccurrences(schedule, medId, windowDays = 30) {
+  const occurrences = [];
+  if (!schedule || !schedule.times || !schedule.times.length) return occurrences;
+
+  const start = new Date(schedule.startDate + 'T00:00:00');
+  const now = new Date();
+  const windowEnd = new Date();
+  windowEnd.setDate(windowEnd.getDate() + windowDays);
+
+  const end = schedule.endDate ? new Date(schedule.endDate + 'T23:59:59') : windowEnd;
+  const actualEnd = end < windowEnd ? end : windowEnd;
+
+  const fromDate = now < start ? start : now;
+  const fromDay = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+
+  // نسير يوماً بيوم
+  let cursor = new Date(fromDay);
+  let safety = 0;
+  while (cursor <= actualEnd && safety < 400) {
+    safety++;
+    const dateKey = getLocalDateKey(cursor);
+    const dow = cursor.getDay(); // 0 = الأحد
+
+    if (isScheduleActiveOn(schedule, cursor, dow, start)) {
+      for (const t of schedule.times) {
+        const [h, m] = t.split(':').map(Number);
+        const occDate = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate(), h, m, 0, 0);
+        if (occDate > now && occDate <= actualEnd) {
+          occurrences.push({
+            key: `${medId}_${schedule.id}_${dateKey}_${t}`,
+            date: dateKey,
+            time: t,
+            dateObj: occDate
+          });
+        }
+      }
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return occurrences;
+}
+
+function isScheduleActiveOn(schedule, dateObj, dow, startDate) {
+  if (dateObj < startDate) return false;
+
+  switch (schedule.type) {
+    case 'once': {
+      // فقط في تاريخ البداية
+      return getLocalDateKey(dateObj) === schedule.startDate;
+    }
+    case 'daily': {
+      return true;
+    }
+    case 'weekdays': {
+      return schedule.weekdays.includes(dow);
+    }
+    case 'everyDays': {
+      const diff = Math.floor((dateObj - startDate) / 86400000);
+      return diff >= 0 && (diff % Math.max(1, schedule.intervalDays)) === 0;
+    }
+    case 'monthly': {
+      return dateObj.getDate() === schedule.dayOfMonth;
+    }
+    case 'everyHours': {
+      // كل X ساعات: يُحسب داخل كل يوم من الأوقات المولدة
+      // نستخدم times المحسوبة مسبقاً
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
+/** لـ everyHours: نولّد الأوقات داخل اليوم */
+function expandEveryHoursTimes(schedule) {
+  if (schedule.type !== 'everyHours') return schedule.times;
+  const startTime = schedule.times[0] || '08:00';
+  const [startH, startM] = startTime.split(':').map(Number);
+  const interval = Math.max(1, schedule.intervalHours);
+  const times = [];
+  let cur = startH * 60 + startM;
+  const dayEnd = 24 * 60;
+  while (cur < dayEnd) {
+    times.push(`${pad2(Math.floor(cur / 60))}:${pad2(cur % 60)}`);
+    cur += interval * 60;
+  }
+  // إضافة أوقات بعد منتصف الليل (إن بدأ متأخراً)
+  if (times.length > 0) {
+    const last = cur - interval * 60;
+    // لا نحتاج — التكرار يحدث طبيعياً عبر الأيام
+  }
+  return times;
+}
+
+/** أعد حساب كل الجدولات لجميع الأدوية (يُستدعى عند تغيير أي بيانات) */
+async function rescheduleAll() {
+  if (!CapacitorLN) return;
+
+  // 1) ألغِ كل الإشعارات المجدولة
+  try {
+    const pending = await CapacitorLN.getPending();
+    if (pending && pending.notifications && pending.notifications.length) {
+      await CapacitorLN.cancel({
+        notifications: pending.notifications.map(n => ({ id: n.id }))
+      });
+    }
+  } catch (e) { console.log('[Resched] cancel:', e); }
+
+  // 2) جدول جديد لكل دواء
+  for (const med of state.medicines) {
+    for (const schedule of med.schedules) {
+      await scheduleOneSchedule(med, schedule);
+    }
+  }
+}
+
+/** جدول schedule واحد (بحساب الأوقات الموسعة + المواعيد) */
+async function scheduleOneSchedule(med, schedule) {
+  if (!CapacitorLN) return;
+
+  // للـ everyHours: وسّع الأوقات
+  const effectiveTimes = expandEveryHoursTimes(schedule);
+  const effectiveSchedule = { ...schedule, times: effectiveTimes };
+
+  const occurrences = computeScheduleOccurrences(effectiveSchedule, med.id, 30);
+
+  // حد أقصى 50 إشعار لكل schedule (لتفادي الازدحام)
+  const limited = occurrences.slice(0, 50);
+
+  for (let i = 0; i < limited.length; i++) {
+    const occ = limited[i];
+    const notifId = scheduleToNotifId(med.id, schedule.id, i);
+    const body = med.voice
+      ? `حان وقت دواء ${med.name}. اضغط للاستماع.`
+      : `حان وقت دواء ${med.name}. خذ ${med.dose}.`;
+
+    try {
+      await CapacitorLN.schedule({
+        notifications: [{
+          id: notifId,
+          title: '💊 موعد الدواء',
+          body: body,
+          schedule: {
+            at: occ.dateObj,
+            allowWhileIdle: true,
+            channelId: CHANNEL_ID
+          },
+          sound: 'default',
+          channelId: CHANNEL_ID,
+          autoCancel: true,
+          extra: {
+            medicineId: med.id,
+            scheduleId: schedule.id,
+            occurrenceKey: occ.key,
+            kind: 'medicine'
+          }
+        }]
+      });
+    } catch (e) {
+      console.error('[Sched] فشل:', e);
+    }
+  }
+  console.log(`[Sched] ✅ ${med.name} → ${limited.length} موعد`);
+}
+
+/* =========================================================
+   8) عرض الأدوية (مجموعة حسب الوقت)
    ========================================================= */
 function renderHome() {
   document.getElementById('greeting').textContent = `مرحباً ${state.userName} 👋`;
+
   const list = document.getElementById('medList');
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateKey();
 
   if (!state.medicines.length) {
     list.innerHTML = `<div class="empty"><span class="icon">📋</span>لا توجد أدوية بعد<br>اضغط على الزر بالأسفل</div>`;
+    document.getElementById('historySection').style.display = 'none';
     return;
   }
 
-  const sorted = [...state.medicines].sort((a,b) => a.time.localeCompare(b.time));
-  list.innerHTML = sorted.map(med => {
-    const key = `${med.id}_${today}`;
-    const taken = state.taken[key] === true;
+  // اجمع كل الـ occurrences لليوم من كل الأدوية
+  const now = new Date();
+  const todaysOccurrences = [];
+
+  for (const med of state.medicines) {
+    for (const schedule of med.schedules) {
+      const occ = computeTodaysOccurrences(med, schedule, today);
+      for (const o of occ) todaysOccurrences.push(o);
+    }
+  }
+
+  // رتّب حسب الوقت
+  todaysOccurrences.sort((a, b) => a.time.localeCompare(b.time));
+
+  if (!todaysOccurrences.length) {
+    list.innerHTML = `<div class="empty"><span class="icon">🎉</span>لا مواعيد لهذا اليوم</div>`;
+  } else {
+    list.innerHTML = todaysOccurrences.map(o => renderOccurrenceCard(o, today)).join('');
+  }
+
+  renderHistory();
+}
+
+/** احسب مواعيد اليوم لدواء معين */
+function computeTodaysOccurrences(med, schedule, today) {
+  const out = [];
+  const todayDate = new Date(today + 'T00:00:00');
+  const dow = todayDate.getDay();
+  const start = new Date(schedule.startDate + 'T00:00:00');
+  if (todayDate < start) return out;
+  if (schedule.endDate && todayDate > new Date(schedule.endDate + 'T23:59:59')) return out;
+
+  const effectiveTimes = expandEveryHoursTimes(schedule);
+
+  if (!isScheduleActiveOn(schedule, todayDate, dow, start)) return out;
+
+  for (const t of effectiveTimes) {
+    const key = `${med.id}_${schedule.id}_${today}_${t}`;
+    const occRecord = state.occurrences[key];
+    let status = 'upcoming';
+    if (state.taken[`${med.id}_${today}`] && schedule.times.length === 1) {
+      // للتوافق مع النظام القديم — دواء بموعد واحد
+      status = 'taken';
+    }
+    if (occRecord) status = occRecord.status;
+
+    out.push({
+      medId: med.id,
+      scheduleId: schedule.id,
+      medName: med.name,
+      dose: med.dose,
+      time: t,
+      key: key,
+      date: today,
+      status: status
+    });
+  }
+  return out;
+}
+
+function renderOccurrenceCard(o, today) {
+  const med = state.medicines.find(m => m.id === o.medId);
+  const hasVoice = med && med.voice;
+
+  let statusCls = 'status-upcoming', statusText = '⏳ قادم';
+  if (o.status === 'taken')   { statusCls = 'status-taken';   statusText = '✅ تم أخذه'; }
+  if (o.status === 'missed')  { statusCls = 'status-missed';  statusText = '❌ فائت'; }
+  if (o.status === 'snoozed') { statusCls = 'status-upcoming'; statusText = '🟡 مؤجل'; }
+  if (o.status === 'now')     { statusCls = 'status-now';     statusText = '🔔 الآن'; }
+
+  return `
+    <div class="card" data-id="${escapeHtml(o.medId)}">
+      <div class="card-header">
+        <span class="card-icon">💊</span>
+        <span class="card-name">${escapeHtml(o.medName)}</span>
+      </div>
+      <div class="card-info">🕐 الساعة ${formatTime(o.time)}</div>
+      <div class="card-info">الجرعة: ${escapeHtml(o.dose)}</div>
+      ${hasVoice ? `<div class="card-info">🎙️ رسالة صوتية مسجلة</div>` : ''}
+      <div class="card-status ${statusCls}">${statusText}</div>
+      <div class="card-actions">
+        ${o.status !== 'taken' ? `<button class="btn-take" data-action="take" data-key="${escapeHtml(o.key)}" data-med="${escapeHtml(o.medId)}" data-sched="${escapeHtml(o.scheduleId)}">✅ أخذت</button>` : ''}
+        <button class="btn-voice" data-action="edit" data-id="${escapeHtml(o.medId)}">✏️ تعديل</button>
+        <button class="btn-delete" data-action="delete" data-id="${escapeHtml(o.medId)}">🗑 حذف</button>
+      </div>
+    </div>`;
+}
+
+function renderHistory() {
+  const today = getLocalDateKey();
+  const section = document.getElementById('historySection');
+  const list = document.getElementById('historyList');
+
+  // اجمع من occurrences
+  const items = [];
+  Object.keys(state.occurrences).forEach(key => {
+    const parts = key.split('_');
+    // التنسيق: medId_schedId_YYYY-MM-DD_HH:MM
+    if (parts.length < 4) return;
+    const time = parts[parts.length - 1];
+    const date = parts[parts.length - 2];
+    if (date !== today) return;
+    const rec = state.occurrences[key];
+    if (!rec) return;
+
+    // ابحث عن الاسم
+    const medId = parts[0];
+    const med = state.medicines.find(m => m.id === medId);
+    const name = med ? med.name : (rec.name || 'دواء');
+
+    items.push({ time, name, status: rec.status, updatedAt: rec.updatedAt || 0 });
+  });
+
+  items.sort((a, b) => a.time.localeCompare(b.time));
+
+  if (!items.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+
+  list.innerHTML = items.map(it => {
+    let statusText = '⏳ قادم', statusCls = 'upcoming';
+    if (it.status === 'taken')   { statusText = '✅ تم أخذه'; statusCls = 'taken'; }
+    if (it.status === 'missed')  { statusText = '❌ فائت';   statusCls = 'missed'; }
+    if (it.status === 'snoozed') { statusText = '🟡 مؤجل';  statusCls = 'snoozed'; }
+
     return `
-      <div class="card">
-        <div class="card-header">
-          <span class="card-icon">💊</span>
-          <span class="card-name">${escapeHtml(med.name)}</span>
-        </div>
-        <div class="card-info">🕐 الساعة ${formatTime(med.time)}</div>
-        <div class="card-info">الجرعة: ${escapeHtml(med.dose)}</div>
-        <div class="card-info">التكرار: ${med.repeat === 'daily' ? 'كل يوم' : 'مرة واحدة'}</div>
-        ${med.voice ? `<div class="card-info">🎙️ رسالة صوتية مسجلة</div>` : ''}
-        <div class="card-status ${taken ? 'status-taken' : 'status-upcoming'}">
-          ${taken ? '✅ تم أخذ الدواء اليوم' : '⏳ قادم'}
-        </div>
-        <div class="card-actions">
-          ${!taken ? `<button class="btn-take" onclick="quickTake('${med.id}')">✅ أخذت</button>` : ''}
-          <button class="btn-voice" onclick="editMedicine('${med.id}')">✏️ تعديل</button>
-          <button class="btn-delete" onclick="askDelete('${med.id}', '${escapeHtml(med.name)}')">🗑 حذف</button>
-        </div>
+      <div class="history-item">
+        <span class="time">${formatTime(it.time)}</span>
+        <span class="name">${escapeHtml(it.name)}</span>
+        <span class="status ${statusCls}">${statusText}</span>
       </div>`;
   }).join('');
 }
 
 function formatTime(t) {
-  if (!t) return '';
+  if (!t || typeof t !== 'string' || !t.includes(':')) return '';
   const [h, m] = t.split(':').map(Number);
+  if (isNaN(h) || isNaN(m)) return t;
   const period = h < 12 ? 'صباحاً' : 'مساءً';
   const h12 = (h % 12) || 12;
-  return `${String(h12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${period}`;
+  return `${pad2(h12)}:${pad2(m)} ${period}`;
 }
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
 }
 
 /* =========================================================
-   التسجيل الصوتي
+   9) واجهة الجدولة الديناميكية
+   ========================================================= */
+function selectRepeatType(type) {
+  selectedRepeatType = type;
+  updateRepeatButtons();
+  renderScheduleContent();
+  updateScheduleSummary();
+}
+
+function updateRepeatButtons() {
+  document.querySelectorAll('.repeat-option').forEach(b => {
+    b.classList.toggle('active', b.dataset.type === selectedRepeatType);
+  });
+}
+
+function renderScheduleContent() {
+  const c = document.getElementById('scheduleContent');
+  const today = getLocalDateKey();
+
+  switch (selectedRepeatType) {
+    case 'once':
+      c.innerHTML = `
+        <div>
+          <label>التاريخ</label>
+          <input id="scOnceDate" type="date" value="${today}">
+        </div>
+        <div>
+          <label>الوقت</label>
+          <input id="scOnceTime" type="time" value="08:00">
+        </div>
+        <div>
+          <label>تاريخ الانتهاء (اختياري)</label>
+          <input id="scEndDate" type="date" value="">
+        </div>
+      `;
+      // اربط events لتحديث الملخص
+      setTimeout(() => {
+        ['scOnceDate','scOnceTime','scEndDate'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('change', updateScheduleSummary);
+        });
+        updateScheduleSummary();
+      }, 0);
+      break;
+
+    case 'daily':
+      c.innerHTML = `
+        <div>
+          <label>الأوقات (يمكن إضافة أكثر من وقت)</label>
+          <div class="times-list" id="timesList">
+            <div class="time-row">
+              <input type="time" value="08:00" class="time-input">
+              <button type="button" onclick="removeTimeRow(this)">✕</button>
+            </div>
+          </div>
+          <button type="button" class="add-time-btn" onclick="addTimeRow()">+ إضافة وقت آخر</button>
+        </div>
+        <div>
+          <label>تاريخ البداية</label>
+          <input id="scStartDate" type="date" value="${today}">
+        </div>
+        <div>
+          <label>تاريخ الانتهاء (اختياري)</label>
+          <input id="scEndDate" type="date" value="">
+        </div>
+      `;
+      setTimeout(() => {
+        document.querySelectorAll('.time-input').forEach(el => el.addEventListener('change', updateScheduleSummary));
+        ['scStartDate','scEndDate'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('change', updateScheduleSummary);
+        });
+        updateScheduleSummary();
+      }, 0);
+      break;
+
+    case 'everyHours':
+      c.innerHTML = `
+        <div>
+          <label>وقت البداية</label>
+          <input id="scStartTime" type="time" value="08:00">
+        </div>
+        <div class="inline-field">
+          <label>كل</label>
+          <input id="scIntervalHours" type="number" min="1" max="24" value="8">
+          <label>ساعات</label>
+        </div>
+        <div>
+          <label>تاريخ البداية</label>
+          <input id="scStartDate" type="date" value="${today}">
+        </div>
+        <div>
+          <label>تاريخ الانتهاء</label>
+          <input id="scEndDate" type="date" value="">
+        </div>
+      `;
+      setTimeout(() => {
+        ['scStartTime','scIntervalHours','scStartDate','scEndDate'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('input', updateScheduleSummary);
+          if (el) el.addEventListener('change', updateScheduleSummary);
+        });
+        updateScheduleSummary();
+      }, 0);
+      break;
+
+    case 'weekdays':
+      c.innerHTML = `
+        <div>
+          <label>اختر الأيام</label>
+          <div class="weekdays" id="weekdaysGrid">
+            ${['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'].map((d, i) => `
+              <button type="button" class="weekday-btn" data-day="${i}" onclick="toggleWeekday(this)">${d}</button>
+            `).join('')}
+          </div>
+        </div>
+        <div>
+          <label>الأوقات</label>
+          <div class="times-list" id="timesList">
+            <div class="time-row">
+              <input type="time" value="08:00" class="time-input">
+              <button type="button" onclick="removeTimeRow(this)">✕</button>
+            </div>
+          </div>
+          <button type="button" class="add-time-btn" onclick="addTimeRow()">+ إضافة وقت</button>
+        </div>
+        <div>
+          <label>تاريخ البداية</label>
+          <input id="scStartDate" type="date" value="${today}">
+        </div>
+        <div>
+          <label>تاريخ الانتهاء (اختياري)</label>
+          <input id="scEndDate" type="date" value="">
+        </div>
+      `;
+      setTimeout(() => {
+        document.querySelectorAll('.time-input').forEach(el => el.addEventListener('change', updateScheduleSummary));
+        ['scStartDate','scEndDate'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('change', updateScheduleSummary);
+        });
+        updateScheduleSummary();
+      }, 0);
+      break;
+
+    case 'everyDays':
+      c.innerHTML = `
+        <div class="inline-field">
+          <label>كل</label>
+          <input id="scIntervalDays" type="number" min="1" max="90" value="2">
+          <label>أيام</label>
+        </div>
+        <div>
+          <label>الأوقات</label>
+          <div class="times-list" id="timesList">
+            <div class="time-row">
+              <input type="time" value="08:00" class="time-input">
+              <button type="button" onclick="removeTimeRow(this)">✕</button>
+            </div>
+          </div>
+          <button type="button" class="add-time-btn" onclick="addTimeRow()">+ إضافة وقت</button>
+        </div>
+        <div>
+          <label>تاريخ البداية</label>
+          <input id="scStartDate" type="date" value="${today}">
+        </div>
+        <div>
+          <label>تاريخ الانتهاء (اختياري)</label>
+          <input id="scEndDate" type="date" value="">
+        </div>
+      `;
+      setTimeout(() => {
+        document.querySelectorAll('.time-input').forEach(el => el.addEventListener('change', updateScheduleSummary));
+        ['scIntervalDays','scStartDate','scEndDate'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('input', updateScheduleSummary);
+          if (el) el.addEventListener('change', updateScheduleSummary);
+        });
+        updateScheduleSummary();
+      }, 0);
+      break;
+
+    case 'monthly':
+      c.innerHTML = `
+        <div class="inline-field">
+          <label>اليوم</label>
+          <input id="scDayOfMonth" type="number" min="1" max="31" value="15">
+          <label>من كل شهر</label>
+        </div>
+        <div>
+          <label>الوقت</label>
+          <input id="scMonthlyTime" type="time" value="09:00">
+        </div>
+        <div>
+          <label>تاريخ البداية</label>
+          <input id="scStartDate" type="date" value="${today}">
+        </div>
+        <div>
+          <label>تاريخ الانتهاء (اختياري)</label>
+          <input id="scEndDate" type="date" value="">
+        </div>
+      `;
+      setTimeout(() => {
+        ['scDayOfMonth','scMonthlyTime','scStartDate','scEndDate'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('input', updateScheduleSummary);
+          if (el) el.addEventListener('change', updateScheduleSummary);
+        });
+        updateScheduleSummary();
+      }, 0);
+      break;
+  }
+}
+
+function addTimeRow() {
+  const list = document.getElementById('timesList');
+  if (!list) return;
+  const row = document.createElement('div');
+  row.className = 'time-row';
+  row.innerHTML = `
+    <input type="time" value="12:00" class="time-input">
+    <button type="button" onclick="removeTimeRow(this)">✕</button>
+  `;
+  list.appendChild(row);
+  row.querySelector('.time-input').addEventListener('change', updateScheduleSummary);
+  updateScheduleSummary();
+}
+
+function removeTimeRow(btn) {
+  const list = document.getElementById('timesList');
+  if (!list) return;
+  if (list.children.length <= 1) { alert('يجب وقت واحد على الأقل'); return; }
+  btn.parentElement.remove();
+  updateScheduleSummary();
+}
+
+function toggleWeekday(btn) {
+  btn.classList.toggle('active');
+  updateScheduleSummary();
+}
+
+/** بناء schedule من الواجهة الحالية */
+function buildScheduleFromUI() {
+  const schedule = {
+    id: uid(),
+    type: selectedRepeatType,
+    times: [],
+    startDate: getLocalDateKey(),
+    endDate: null,
+    weekdays: [],
+    dayOfMonth: 15,
+    intervalHours: 8,
+    intervalDays: 2
+  };
+
+  const getVal = id => { const el = document.getElementById(id); return el ? el.value : null; };
+
+  switch (selectedRepeatType) {
+    case 'once': {
+      schedule.startDate = getVal('scOnceDate') || getLocalDateKey();
+      schedule.times = [getVal('scOnceTime') || '08:00'];
+      schedule.endDate = getVal('scEndDate') || schedule.startDate;
+      break;
+    }
+    case 'daily': {
+      schedule.times = Array.from(document.querySelectorAll('.time-input')).map(i => i.value).filter(Boolean);
+      schedule.startDate = getVal('scStartDate') || getLocalDateKey();
+      schedule.endDate = getVal('scEndDate') || null;
+      break;
+    }
+    case 'everyHours': {
+      schedule.intervalHours = parseInt(getVal('scIntervalHours')) || 8;
+      schedule.times = [getVal('scStartTime') || '08:00'];
+      schedule.startDate = getVal('scStartDate') || getLocalDateKey();
+      schedule.endDate = getVal('scEndDate') || null;
+      break;
+    }
+    case 'weekdays': {
+      schedule.weekdays = Array.from(document.querySelectorAll('.weekday-btn.active')).map(b => parseInt(b.dataset.day));
+      schedule.times = Array.from(document.querySelectorAll('.time-input')).map(i => i.value).filter(Boolean);
+      schedule.startDate = getVal('scStartDate') || getLocalDateKey();
+      schedule.endDate = getVal('scEndDate') || null;
+      break;
+    }
+    case 'everyDays': {
+      schedule.intervalDays = parseInt(getVal('scIntervalDays')) || 2;
+      schedule.times = Array.from(document.querySelectorAll('.time-input')).map(i => i.value).filter(Boolean);
+      schedule.startDate = getVal('scStartDate') || getLocalDateKey();
+      schedule.endDate = getVal('scEndDate') || null;
+      break;
+    }
+    case 'monthly': {
+      schedule.dayOfMonth = parseInt(getVal('scDayOfMonth')) || 15;
+      schedule.times = [getVal('scMonthlyTime') || '09:00'];
+      schedule.startDate = getVal('scStartDate') || getLocalDateKey();
+      schedule.endDate = getVal('scEndDate') || null;
+      break;
+    }
+  }
+
+  if (!schedule.times.length) schedule.times = ['08:00'];
+
+  // للـ everyHours: احفظ الأوقات الأصلية فقط للعرض، لكن نوسعها في scheduler
+  return schedule;
+}
+
+/** ملخص نصي للجدول */
+function updateScheduleSummary() {
+  const el = document.getElementById('scheduleSummary');
+  if (!el) return;
+  try {
+    const s = buildScheduleFromUI();
+    let text = '—';
+    switch (s.type) {
+      case 'once': text = `مرة واحدة — ${s.startDate} — ${formatTime(s.times[0])}`; break;
+      case 'daily': text = `كل يوم — ${s.times.map(formatTime).join(', ')}`; break;
+      case 'everyHours': text = `كل ${s.intervalHours} ساعات — بداية ${formatTime(s.times[0])}`; break;
+      case 'weekdays': {
+        const days = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+        const d = s.weekdays.map(i => days[i]).join(', ');
+        text = `أيام: ${d || '—'} — ${s.times.map(formatTime).join(', ')}`;
+        break;
+      }
+      case 'everyDays': text = `كل ${s.intervalDays} أيام — ${s.times.map(formatTime).join(', ')}`; break;
+      case 'monthly': text = `يوم ${s.dayOfMonth} من كل شهر — ${formatTime(s.times[0])}`; break;
+    }
+    if (s.endDate && s.type !== 'once') text += ` — حتى ${s.endDate}`;
+    el.textContent = text;
+  } catch (e) { el.textContent = '—'; }
+}
+
+/* =========================================================
+   10) التسجيل الصوتي
    ========================================================= */
 let mediaRecorder = null;
 let audioChunks = [];
@@ -490,16 +1433,18 @@ let recordingInterval = null;
 let recordingSeconds = 0;
 let currentRecordingBlob = null;
 let currentRecordingUrl = null;
+const MAX_RECORD_SECONDS = 30;
 
 function pickMimeType() {
-  const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+  const types = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];
   for (const t of types) {
-    if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
+    try { if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t; } catch (e) {}
   }
   return '';
 }
 
 async function startRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') { stopRecording(); return; }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mimeType = pickMimeType();
@@ -510,12 +1455,13 @@ async function startRecording() {
     mediaRecorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) audioChunks.push(e.data);
     };
-
     mediaRecorder.onstop = () => {
-      const blob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
-      currentRecordingBlob = blob;
-      if (currentRecordingUrl) URL.revokeObjectURL(currentRecordingUrl);
-      currentRecordingUrl = URL.createObjectURL(blob);
+      try {
+        const blob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
+        currentRecordingBlob = blob;
+        if (currentRecordingUrl) URL.revokeObjectURL(currentRecordingUrl);
+        currentRecordingUrl = URL.createObjectURL(blob);
+      } catch (e) {}
       stream.getTracks().forEach(t => t.stop());
       updateVoiceUI('recorded');
     };
@@ -530,49 +1476,45 @@ async function startRecording() {
       recordingSeconds++;
       const m = Math.floor(recordingSeconds / 60);
       const s = recordingSeconds % 60;
-      document.getElementById('timerText').textContent = `${m}:${String(s).padStart(2,'0')}`;
-      if (recordingSeconds >= 30) stopRecording();
+      document.getElementById('timerText').textContent = `${m}:${pad2(s)}`;
+      if (recordingSeconds >= MAX_RECORD_SECONDS) stopRecording();
     }, 1000);
 
     updateVoiceUI('recording');
   } catch (e) {
     console.log('[Rec]', e);
-    alert('❌ ما قدرنا نوصل للميكروفون.\nتأكد من السماح بالوصول للميكروفون.');
+    alert('❌ ما قدرنا نوصل للميكروفون.');
   }
 }
 
 function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  try { if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop(); } catch (e) {}
   if (recordingInterval) { clearInterval(recordingInterval); recordingInterval = null; }
-  document.getElementById('voiceSection').classList.remove('recording');
-  document.getElementById('recordingTimer').style.display = 'none';
+  const el = document.getElementById('voiceSection');
+  if (el) el.classList.remove('recording');
+  const t = document.getElementById('recordingTimer');
+  if (t) t.style.display = 'none';
 }
 
 function toggleRecording() {
   if (mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
   else startRecording();
 }
-
 function playRecording() {
   if (!currentRecordingUrl) return;
-  const audio = new Audio(currentRecordingUrl);
-  audio.play().catch(e => console.log('[Play]', e));
+  try { new Audio(currentRecordingUrl).play().catch(e => console.log('[Play]', e)); } catch (e) {}
 }
-
 function clearRecording() {
   currentRecordingBlob = null;
-  if (currentRecordingUrl) {
-    URL.revokeObjectURL(currentRecordingUrl);
-    currentRecordingUrl = null;
-  }
+  if (currentRecordingUrl) { URL.revokeObjectURL(currentRecordingUrl); currentRecordingUrl = null; }
   updateVoiceUI('empty');
 }
-
 function updateVoiceUI(status) {
   const statusEl = document.getElementById('voiceStatus');
   const idleBtns = document.getElementById('voiceButtonsIdle');
   const recBtns = document.getElementById('voiceButtonsRecorded');
   const recordBtn = document.getElementById('recordBtn');
+  if (!statusEl || !idleBtns || !recBtns || !recordBtn) return;
 
   if (status === 'empty') {
     statusEl.className = 'voice-status empty';
@@ -593,75 +1535,98 @@ function updateVoiceUI(status) {
     recBtns.style.display = 'flex';
   }
 }
-
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
+    const r = new FileReader();
+    r.onloadend = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
   });
 }
-
 function base64ToBlob(dataUrl) {
   try {
     const [header, base64] = dataUrl.split(',');
-    const mime = header.match(/:(.*?);/)[1];
+    const mimeMatch = header.match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'audio/webm';
     const binary = atob(base64);
-    const array = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
-    return new Blob([array], { type: mime });
+    const arr = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+    return new Blob([arr], { type: mime });
   } catch (e) { return null; }
 }
 
 /* =========================================================
-   حفظ / تعديل دواء
+   11) حفظ / تعديل دواء
    ========================================================= */
 async function saveMedicine() {
   const name = document.getElementById('medName').value.trim();
   const dose = document.getElementById('medDose').value.trim() || 'حبة واحدة';
-  const time = document.getElementById('medTime').value;
-  const repeat = document.getElementById('medRepeat').value;
 
   if (!name) { alert('الرجاء إدخال اسم الدواء'); return; }
-  if (!time) { alert('الرجاء إدخال وقت الدواء'); return; }
-  if (!currentRecordingBlob) {
-    if (!confirm('ما سجّلت رسالة صوتية.\nهل تريد الحفظ بدون صوت؟')) return;
+
+  const schedule = buildScheduleFromUI();
+
+  // تحقق من صحة الجدول
+  if (schedule.type === 'weekdays' && schedule.weekdays.length === 0) {
+    alert('اختر يوماً واحداً على الأقل');
+    return;
   }
 
-  let voiceData = null;
+  if (!currentRecordingBlob && !editingMedId) {
+    pendingSaveData = { name, dose, schedule };
+    document.getElementById('noVoiceModal').classList.add('show');
+    return;
+  }
+
+  await _doSave({ name, dose, schedule });
+}
+
+async function _doSave(input) {
+  let voiceData;
   if (currentRecordingBlob) {
-    try { voiceData = await blobToBase64(currentRecordingBlob); }
-    catch (e) { console.log('[Save]', e); }
+    try { voiceData = await blobToBase64(currentRecordingBlob); } catch (e) { voiceData = null; }
   }
 
   if (editingMedId) {
     const med = state.medicines.find(m => m.id === editingMedId);
     if (med) {
-      med.name = name;
-      med.dose = dose;
-      med.time = time;
-      med.repeat = repeat;
-      if (voiceData) med.voice = voiceData;
-      await cancelNotification(med.id);
-      await scheduleNotification(med);
+      med.name = input.name;
+      med.dose = input.dose;
+      med.schedules = [input.schedule]; // استبدل كل الجدولات بجدول واحد (يمكن تطويره لاحقاً)
+      if (voiceData !== undefined && voiceData !== null) med.voice = voiceData;
+      else if (!currentRecordingBlob) med.voice = null;
+
+      saveData();
+      await rescheduleAll();
     }
-    alert('✅ تم تحديث الدواء');
+    setStatus('✅ تم تحديث الدواء', 'ok');
   } else {
     const med = {
-      id: String(Date.now()),
-      name, dose, time, repeat,
-      voice: voiceData
+      id: uid(),
+      name: input.name,
+      dose: input.dose,
+      voice: voiceData || null,
+      schedules: [input.schedule]
     };
     state.medicines.push(med);
-    await scheduleNotification(med);
-    alert(`✅ تم حفظ "${name}"\nسيرن الساعة ${formatTime(time)}`);
+    saveData();
+    await rescheduleAll();
+    setStatus(`✅ تم حفظ "${input.name}"`, 'ok');
   }
 
-  saveData();
   clearRecording();
   editingMedId = null;
   goHome();
+}
+function confirmSaveWithoutVoice() {
+  document.getElementById('noVoiceModal').classList.remove('show');
+  const data = pendingSaveData;
+  pendingSaveData = null;
+  if (data) { clearRecording(); _doSave(data); }
+}
+function closeNoVoiceModal() {
+  document.getElementById('noVoiceModal').classList.remove('show');
+  pendingSaveData = null;
 }
 
 function editMedicine(medId) {
@@ -671,8 +1636,56 @@ function editMedicine(medId) {
   document.getElementById('addTitle').textContent = 'تعديل دواء';
   document.getElementById('medName').value = med.name;
   document.getElementById('medDose').value = med.dose;
-  document.getElementById('medTime').value = med.time;
-  document.getElementById('medRepeat').value = med.repeat;
+
+  const schedule = med.schedules && med.schedules[0] ? med.schedules[0] : { type: 'daily', times: ['08:00'] };
+  selectedRepeatType = schedule.type;
+  updateRepeatButtons();
+  renderScheduleContent();
+
+  // املأ القيم بعد renderScheduleContent
+  setTimeout(() => {
+    const get = id => document.getElementById(id);
+    if (schedule.startDate) { const el = get('scStartDate') || get('scOnceDate'); if (el) el.value = schedule.startDate; }
+    if (schedule.endDate)   { const el = get('scEndDate'); if (el) el.value = schedule.endDate; }
+
+    if (schedule.type === 'once') {
+      if (get('scOnceTime')) get('scOnceTime').value = schedule.times[0] || '08:00';
+      if (get('scOnceDate')) get('scOnceDate').value = schedule.startDate;
+    } else if (schedule.type === 'everyHours') {
+      if (get('scStartTime')) get('scStartTime').value = schedule.times[0] || '08:00';
+      if (get('scIntervalHours')) get('scIntervalHours').value = schedule.intervalHours || 8;
+    } else if (schedule.type === 'weekdays') {
+      const grid = get('weekdaysGrid');
+      if (grid) {
+        grid.querySelectorAll('.weekday-btn').forEach(b => {
+          if (schedule.weekdays.includes(parseInt(b.dataset.day))) b.classList.add('active');
+        });
+      }
+    } else if (schedule.type === 'everyDays') {
+      if (get('scIntervalDays')) get('scIntervalDays').value = schedule.intervalDays || 2;
+    } else if (schedule.type === 'monthly') {
+      if (get('scDayOfMonth')) get('scDayOfMonth').value = schedule.dayOfMonth || 15;
+      if (get('scMonthlyTime')) get('scMonthlyTime').value = schedule.times[0] || '09:00';
+    }
+
+    // ملء الأوقات (للأنواع التي فيها times-list)
+    const timesList = get('timesList');
+    if (timesList && (schedule.type === 'daily' || schedule.type === 'weekdays' || schedule.type === 'everyDays')) {
+      timesList.innerHTML = '';
+      schedule.times.forEach((t, i) => {
+        const row = document.createElement('div');
+        row.className = 'time-row';
+        row.innerHTML = `
+          <input type="time" value="${t}" class="time-input">
+          <button type="button" onclick="removeTimeRow(this)">✕</button>
+        `;
+        timesList.appendChild(row);
+        row.querySelector('.time-input').addEventListener('change', updateScheduleSummary);
+      });
+    }
+
+    updateScheduleSummary();
+  }, 50);
 
   clearRecording();
   if (med.voice) {
@@ -690,11 +1703,12 @@ function editMedicine(medId) {
 }
 
 /* =========================================================
-   حذف دواء
+   12) حذف دواء
    ========================================================= */
-function askDelete(medId, medName) {
+function askDelete(medId) {
+  const med = state.medicines.find(m => m.id === medId);
   pendingDeleteId = medId;
-  document.getElementById('deleteText').textContent = `هل أنت متأكد من حذف "${medName}"؟`;
+  document.getElementById('deleteText').textContent = `هل أنت متأكد من حذف "${med ? med.name : ''}"؟`;
   document.getElementById('deleteModal').classList.add('show');
 }
 function closeDeleteModal() {
@@ -702,109 +1716,127 @@ function closeDeleteModal() {
   document.getElementById('deleteModal').classList.remove('show');
 }
 async function confirmDelete() {
-  if (!pendingDeleteId) return;
-  await cancelNotification(pendingDeleteId);
-  state.medicines = state.medicines.filter(m => m.id !== pendingDeleteId);
-  Object.keys(state.taken).forEach(k => {
-    if (k.startsWith(pendingDeleteId + '_')) delete state.taken[k];
-  });
+  const id = pendingDeleteId;
+  if (!id) return;
+
+  // حذف الدواء
+  state.medicines = state.medicines.filter(m => m.id !== id);
+
+  // حذف سجلات taken و occurrences
+  Object.keys(state.taken).forEach(k => { if (k.startsWith(id + '_')) delete state.taken[k]; });
+  Object.keys(state.occurrences).forEach(k => { if (k.startsWith(id + '_')) delete state.occurrences[k]; });
+
+  // حذف من history
+  state.history = state.history.filter(h => h.medId !== id);
+
   saveData();
+  await rescheduleAll();
   closeDeleteModal();
   renderHome();
-}
-
-function quickTake(medId) {
-  const today = new Date().toISOString().split('T')[0];
-  state.taken[`${medId}_${today}`] = true;
-  saveData();
-  renderHome();
+  setStatus('✅ تم حذف الدواء', 'ok');
 }
 
 /* =========================================================
-   ⏰ جدولة الإشعارات
+   13) أخذ الدواء (Occurrence)
    ========================================================= */
-async function scheduleNotification(med) {
-  if (!CapacitorLN) return;
-  const [h, m] = med.time.split(':').map(Number);
-  const now = new Date();
-  let target = new Date();
-  target.setHours(h, m, 0, 0);
-  if (target <= now) {
-    if (med.repeat === 'daily') target.setDate(target.getDate() + 1);
-    else return;
-  }
-  const notifId = parseInt(med.id.slice(-8)) || Math.floor(Math.random() * 100000);
+async function quickTakeByKey(occKey, medId, schedId) {
+  const occ = state.occurrences[occKey] || {};
+  occ.status = 'taken';
+  occ.updatedAt = Date.now();
+  occ.medId = medId;
+  occ.schedId = schedId;
+  state.occurrences[occKey] = occ;
 
-  try {
-    await CapacitorLN.schedule({
-      notifications: [{
-        id: notifId,
-        title: '💊 موعد الدواء',
-        body: `حان وقت دواء ${med.name}. اضغط لفتح التطبيق.`,
-        schedule: { at: target, allowWhileIdle: true },
-        sound: 'default',
-        channelId: 'medication-alarm',
-        ongoing: false,
-        autoCancel: true,
-        priority: 2,  // MAX
-        extra: { medicineId: med.id }
-      }]
+  // احتفظ أيضاً في taken (للتوافق مع النظام القديم)
+  const date = occKey.split('_').slice(-2, -1)[0];
+  state.taken[`${medId}_${date}`] = true;
+
+  // history
+  const med = state.medicines.find(m => m.id === medId);
+  if (med) {
+    state.history.unshift({
+      medId, name: med.name, dose: med.dose,
+      time: occKey.split('_').pop(),
+      date: date,
+      takenAt: new Date().toISOString()
     });
-    console.log(`[Cap] ✅ جدولة "${med.name}" في ${target.toLocaleString('ar')}`);
-  } catch (e) { console.log('[Cap] ❌ فشل:', e); }
-}
+    if (state.history.length > 200) state.history.length = 200;
+  }
 
-async function cancelNotification(medId) {
-  if (!CapacitorLN) return;
-  const notifId = parseInt(medId.slice(-8));
-  try { await CapacitorLN.cancel({ notifications: [{ id: notifId }] }); } catch (e) {}
+  saveData();
+
+  // ألغِ الإشعار القادم لهذا الموعد تحديداً
+  try {
+    const pending = await CapacitorLN.getPending();
+    if (pending && pending.notifications) {
+      const toCancel = pending.notifications.filter(n => {
+        const ex = n.extra || {};
+        return ex.medicineId === medId && ex.scheduleId === schedId;
+      });
+      if (toCancel.length) {
+        await CapacitorLN.cancel({ notifications: toCancel.map(n => ({ id: n.id })) });
+      }
+    }
+  } catch (e) {}
+
+  renderHome();
+  setStatus('✅ تم تسجيل الدواء', 'ok');
 }
 
 /* =========================================================
-   🔊 النطق (احتياطي)
+   14) TTS احتياطي
    ========================================================= */
 let arabicVoice = null;
 function pickArabicVoice() {
   const voices = window.speechSynthesis?.getVoices?.() || [];
   arabicVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('ar'))
-             || voices.find(v => /arab/i.test(v.name)) || null;
+             || voices.find(v => /arab/i.test(v.name))
+             || null;
 }
 if ('speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = pickArabicVoice;
   pickArabicVoice();
   setTimeout(pickArabicVoice, 500);
+  setTimeout(pickArabicVoice, 1500);
 }
-
 function speakFallback(text) {
   if (!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  if (!arabicVoice) pickArabicVoice();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ar-SA';
-  u.rate = 0.7;
-  if (arabicVoice) u.voice = arabicVoice;
-  window.speechSynthesis.speak(u);
+  try {
+    window.speechSynthesis.cancel();
+    if (!arabicVoice) pickArabicVoice();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ar-SA';
+    u.rate = 0.7;
+    if (arabicVoice) u.voice = arabicVoice;
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
 }
 
 /* =========================================================
-   🔔 شاشة المنبه
+   15) شاشة المنبه
    ========================================================= */
 let alarmAudioEl = null;
 let alarmSpeakTimeouts = [];
+let alarmPlaying = false;
 
-function triggerAlarm(med) {
-  currentAlarmMed = med;
+function triggerAlarm(medId, scheduleId, occurrence) {
+  const med = state.medicines.find(m => m.id === medId);
+  if (!med) return;
+
+  currentAlarmMed = { medId, scheduleId, occurrence };
+  alarmPlaying = true;
+
   document.getElementById('alarmName').textContent = med.name;
-  document.getElementById('alarmTime').textContent = formatTime(med.time);
+  document.getElementById('alarmTime').textContent = formatTime(occurrence.time);
   document.getElementById('alarmDose').textContent = `الجرعة: ${med.dose}`;
   showScreen('alarmScreen');
 
   stopAllAlarmSounds();
+  alarmPlaying = true;
 
   const playingMsg = document.getElementById('alarmPlaying');
 
   if (med.voice) {
-    // 🎙️ صوت المستخدم
     playingMsg.textContent = '🔊 جاري تشغيل الرسالة الصوتية...';
     try {
       const blob = base64ToBlob(med.voice);
@@ -813,26 +1845,20 @@ function triggerAlarm(med) {
         alarmAudioEl = new Audio(url);
         alarmAudioEl.loop = true;
         alarmAudioEl.volume = 1.0;
-
-        // محاولات متعددة لتشغيل الصوت
         const playAttempt = () => {
+          if (!alarmAudioEl) return;
           alarmAudioEl.play().then(() => {
-            console.log('[Alarm] ✅ الصوت يعمل');
             playingMsg.textContent = '🔊 الرسالة الصوتية تعمل';
-          }).catch(e => {
-            console.log('[Alarm] فشل التشغيل:', e);
-          });
+          }).catch(e => console.log('[Alarm]', e));
         };
         playAttempt();
         setTimeout(playAttempt, 500);
         setTimeout(playAttempt, 1500);
       }
     } catch (e) {
-      console.log('[Alarm]', e);
       speakFallback(`${state.userName}، حان وقت دواء ${med.name}.`);
     }
   } else {
-    // ما في تسجيل → TTS
     playingMsg.textContent = '🔊 جاري النطق...';
     const text = `${state.userName}، حان وقت تناول دواء ${med.name}. خذ ${med.dose}.`;
     speakFallback(text);
@@ -840,39 +1866,74 @@ function triggerAlarm(med) {
     alarmSpeakTimeouts.push(setTimeout(() => speakFallback(text), 14000));
   }
 
-  if (navigator.vibrate) navigator.vibrate([500, 300, 500, 300, 500]);
+  if (navigator.vibrate) {
+    try { navigator.vibrate([500, 300, 500, 300, 500]); } catch (e) {}
+  }
 }
 
 function stopAllAlarmSounds() {
+  alarmPlaying = false;
   if (alarmAudioEl) {
-    try { alarmAudioEl.pause(); alarmAudioEl.currentTime = 0; } catch(e){}
+    try { alarmAudioEl.pause(); alarmAudioEl.currentTime = 0; } catch (e) {}
     alarmAudioEl = null;
   }
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+  }
   alarmSpeakTimeouts.forEach(t => clearTimeout(t));
   alarmSpeakTimeouts = [];
 }
 
-function takeMedicine() {
+async function takeMedicine() {
   if (currentAlarmMed) {
-    const today = new Date().toISOString().split('T')[0];
-    state.taken[`${currentAlarmMed.id}_${today}`] = true;
-    if (currentAlarmMed.repeat === 'once') {
-      state.medicines = state.medicines.filter(m => m.id !== currentAlarmMed.id);
-      cancelNotification(currentAlarmMed.id);
-    }
-    saveData();
-    if (currentAlarmMed.repeat === 'daily') scheduleNotification(currentAlarmMed);
+    await quickTakeByKey(
+      currentAlarmMed.occurrence.key,
+      currentAlarmMed.medId,
+      currentAlarmMed.scheduleId
+    );
   }
   stopAllAlarmSounds();
   currentAlarmMed = null;
   goHome();
 }
 
-function snoozeMedicine() {
+async function snoozeMedicine(minutes) {
   if (currentAlarmMed) {
-    const med = currentAlarmMed;
-    setTimeout(() => triggerAlarm(med), 10 * 60 * 1000);
+    const { medId, scheduleId, occurrence } = currentAlarmMed;
+    const med = state.medicines.find(m => m.id === medId);
+
+    // سجل occurrence كـ snoozed
+    const occ = state.occurrences[occurrence.key] || {};
+    occ.status = 'snoozed';
+    occ.updatedAt = Date.now();
+    occ.medId = medId;
+    occ.schedId = scheduleId;
+    state.occurrences[occurrence.key] = occ;
+    saveData();
+
+    // أنشئ إشعار مؤجل
+    if (CapacitorLN && med) {
+      const snoozeDate = new Date(Date.now() + minutes * 60 * 1000);
+      const notifId = snoozeNotifId(medId, scheduleId);
+      const body = med.voice
+        ? `حان وقت دواء ${med.name}. اضغط للاستماع.`
+        : `تذكير مؤجل: حان وقت دواء ${med.name}.`;
+      try {
+        await CapacitorLN.schedule({
+          notifications: [{
+            id: notifId,
+            title: '🔔 تذكير مؤجل',
+            body: body,
+            schedule: { at: snoozeDate, allowWhileIdle: true, channelId: CHANNEL_ID },
+            sound: 'default',
+            channelId: CHANNEL_ID,
+            autoCancel: true,
+            extra: { medicineId: medId, scheduleId: scheduleId, kind: 'snooze' }
+          }]
+        });
+      } catch (e) {}
+    }
+    setStatus(`🔔 سنذكرك بعد ${minutes} دقيقة`, 'ok');
   }
   stopAllAlarmSounds();
   currentAlarmMed = null;
@@ -880,67 +1941,124 @@ function snoozeMedicine() {
 }
 
 /* =========================================================
-   فحص داخلي
+   16) فحص داخلي (Fallback فقط)
    ========================================================= */
 let firedKeys = new Set();
 function checkMedicines() {
   const now = new Date();
-  const current = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const today = now.toISOString().split('T')[0];
-  state.medicines.forEach(med => {
-    if (med.time !== current) return;
-    const firedKey = `${med.id}_${today}_${current}`;
-    if (state.taken[`${med.id}_${today}`]) return;
-    if (firedKeys.has(firedKey)) return;
-    firedKeys.add(firedKey);
-    triggerAlarm(med);
-  });
+  const currentTime = getLocalTimeKey(now);
+  const today = getLocalDateKey(now);
+
+  for (const med of state.medicines) {
+    for (const schedule of med.schedules) {
+      const occs = computeTodaysOccurrences(med, schedule, today);
+      for (const o of occs) {
+        if (o.time !== currentTime) continue;
+        if (o.status === 'taken') continue;
+        if (firedKeys.has(o.key)) continue;
+        firedKeys.add(o.key);
+        triggerAlarm(med.id, schedule.id, o);
+      }
+    }
+  }
   if (firedKeys.size > 500) firedKeys.clear();
 }
 
 /* =========================================================
-   الاستماع للإشعار
+   17) الاستماع للأحداث
    ========================================================= */
 function setupNotificationListener() {
-  if (!CapacitorLN) return;
+  if (!CapacitorLN || listenersRegistered) return;
+  listenersRegistered = true;
 
-  // عند الضغط على الإشعار
   CapacitorLN.addListener('localNotificationActionPerformed', (event) => {
-    console.log('[Cap] 📱 تم الضغط على الإشعار:', event);
     const medId = event.notification?.extra?.medicineId;
-    if (medId) {
-      const med = state.medicines.find(m => m.id === medId);
-      if (med) {
-        // نأجل قليلاً لين يكتمل فتح التطبيق
-        setTimeout(() => triggerAlarm(med), 500);
-      }
+    const scheduleId = event.notification?.extra?.scheduleId;
+    const occKey = event.notification?.extra?.occurrenceKey;
+    if (medId && scheduleId) {
+      const now = new Date();
+      triggerAlarm(medId, scheduleId, {
+        key: occKey || `${medId}_${scheduleId}_${getLocalDateKey()}_${getLocalTimeKey()}`,
+        date: getLocalDateKey(),
+        time: getLocalTimeKey()
+      });
     }
   });
 
-  // استقبال الإشعار والتطبيق مفتوح
   CapacitorLN.addListener('localNotificationReceived', (event) => {
-    console.log('[Cap] 🔔 وصل إشعار:', event);
+    const medId = event.notification?.extra?.medicineId;
+    const scheduleId = event.notification?.extra?.scheduleId;
+    const occKey = event.notification?.extra?.occurrenceKey;
+    if (medId && scheduleId) {
+      triggerAlarm(medId, scheduleId, {
+        key: occKey || `${medId}_${scheduleId}_${getLocalDateKey()}_${getLocalTimeKey()}`,
+        date: getLocalDateKey(),
+        time: getLocalTimeKey()
+      });
+    }
+  });
+
+  if (CapacitorApp) {
+    CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        console.log('[Cap] التطبيق نشط — إعادة جدولة');
+        rescheduleAll();
+      }
+    });
+  }
+}
+
+/* =========================================================
+   18) ربط أزرار البطاقات (Event Delegation)
+   ========================================================= */
+function attachCardListeners() {
+  const list = document.getElementById('medList');
+  if (!list) return;
+  list.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+
+    if (action === 'take') {
+      quickTakeByKey(btn.dataset.key, btn.dataset.med, btn.dataset.sched);
+    } else if (action === 'edit') {
+      editMedicine(btn.dataset.id);
+    } else if (action === 'delete') {
+      askDelete(btn.dataset.id);
+    }
   });
 }
 
 /* =========================================================
-   الإقلاع
+   19) الإقلاع
    ========================================================= */
 window.addEventListener('load', async () => {
-  if (state.userName) {
-    showScreen('homeScreen');
-    setStatus('✅ جاهز', 'ok');
-  } else {
-    showScreen('nameScreen');
-  }
+  if (state.userName) showScreen('homeScreen');
+  else showScreen('nameScreen');
 
   await initCapacitor();
   setupNotificationListener();
+  attachCardListeners();
 
   setInterval(checkMedicines, 20000);
 
-  if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
+  if (CapacitorLN) {
+    rescheduleAll();
+  }
+
+  if ('wakeLock' in navigator) {
+    navigator.wakeLock.request('screen').catch(()=>{});
+  }
+
   setTimeout(pickArabicVoice, 2000);
+});
+
+/* منع الإغلاق بزر Back في شاشة المنبه */
+window.addEventListener('popstate', (e) => {
+  if (document.getElementById('alarmScreen').classList.contains('active')) {
+    e.preventDefault();
+    history.pushState(null, '', location.href);
+  }
 });
 </script>
 </body>
